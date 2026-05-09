@@ -65,8 +65,8 @@ $userRole = $_SESSION['user']['role'] ?? null;
 
 // Check for admin manage page
 if ($path === '/admin/manage') {
-    // Only sellers can access
-    if (!$isAuthenticated || $userRole !== 'seller') {
+    // Both roles can access when authenticated
+    if (!$isAuthenticated) {
         require __DIR__ . '/frontend/login.html';
         exit;
     }
@@ -78,8 +78,8 @@ if ($path === '/admin/manage') {
 
 // Check for create new product page
 if ($path === '/admin/create-newproduct') {
-    // Only sellers can access
-    if (!$isAuthenticated || $userRole !== 'seller') {
+    // Both roles can access when authenticated
+    if (!$isAuthenticated) {
         require __DIR__ . '/frontend/login.html';
         exit;
     }
@@ -119,7 +119,7 @@ if ($path === '/user' || strpos($path, '/user') === 0) {
     exit;
 }
 
-// Check for admin/seller protected routes
+// Check for admin/seller protected routes - both roles can access
 if (in_array($path, ['/admin', '/dashboard', '/inventory', '/pos', '/delivery', '/admin/create-newproduct']) || 
     strpos($path, '/admin') === 0 ||
     strpos($path, '/dashboard') === 0 ||
@@ -133,15 +133,8 @@ if (in_array($path, ['/admin', '/dashboard', '/inventory', '/pos', '/delivery', 
         exit;
     }
     
-    // Only sellers can access admin routes
-    if ($userRole !== 'seller') {
-        file_put_contents(__DIR__ . '/router.log', "  Admin route: user is not seller, redirecting to user page\n", FILE_APPEND);
-        require __DIR__ . '/frontend/User/index.html';
-        exit;
-    }
-    
-    // If authenticated seller, serve dashboard
-    file_put_contents(__DIR__ . '/router.log', "  Protected route: serving dashboard.html\n", FILE_APPEND);
+    // Both roles can access admin routes when authenticated
+    file_put_contents(__DIR__ . '/router.log', "  Protected route: serving dashboard.html (role: $userRole)\n", FILE_APPEND);
     require __DIR__ . '/frontend/Admin/dashboard.html';
     exit;
 }
