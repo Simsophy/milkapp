@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ALL);
  
-ini_set('display_errors', 1); // Change 0 to 1 temporarily // Always disable display_errors to prevent HTML leakage
+ini_set('display_errors', 0); // Always disable display_errors to prevent HTML leakage
 ini_set('log_errors', 1);
 
 // Catch fatal errors and return JSON
@@ -33,6 +33,15 @@ set_exception_handler(function (Throwable $e) {
         'line'    => $e->getLine(),
     ]);
     exit;
+});
+
+// Convert PHP warnings/notices to exceptions so they return JSON instead of HTML
+set_error_handler(function ($severity, $message, $file, $line) {
+    // Don't throw for suppressed errors (@)
+    if (!(error_reporting() & $severity)) {
+        return false;
+    }
+    throw new ErrorException($message, 0, $severity, $file, $line);
 });
 
 session_start();
