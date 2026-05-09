@@ -89,9 +89,38 @@ if ($path === '/admin/create-newproduct') {
     exit;
 }
 
-// Check if accessing protected routes
-if (in_array($path, ['/user', '/admin', '/dashboard', '/inventory', '/pos', '/delivery', '/admin/create-newproduct']) || 
-    strpos($path, '/user') === 0 || 
+// Check for user routes (for buyers)
+if ($path === '/user' || strpos($path, '/user') === 0) {
+    if (!$isAuthenticated) {
+        require __DIR__ . '/frontend/login.html';
+        exit;
+    }
+    
+    // Serve user-specific pages
+    if ($path === '/user' || $path === '/user/') {
+        file_put_contents(__DIR__ . '/router.log', "  User route: serving User/index.html\n", FILE_APPEND);
+        require __DIR__ . '/frontend/User/index.html';
+        exit;
+    }
+    if ($path === '/user/delivery') {
+        file_put_contents(__DIR__ . '/router.log', "  User route: serving User/delivery.html\n", FILE_APPEND);
+        require __DIR__ . '/frontend/User/delivery.html';
+        exit;
+    }
+    if ($path === '/user/pos') {
+        file_put_contents(__DIR__ . '/router.log', "  User route: serving User/pos.html\n", FILE_APPEND);
+        require __DIR__ . '/frontend/User/pos.html';
+        exit;
+    }
+    
+    // Default user page
+    file_put_contents(__DIR__ . '/router.log', "  User route: fallback to User/index.html\n", FILE_APPEND);
+    require __DIR__ . '/frontend/User/index.html';
+    exit;
+}
+
+// Check for admin/seller protected routes
+if (in_array($path, ['/admin', '/dashboard', '/inventory', '/pos', '/delivery', '/admin/create-newproduct']) || 
     strpos($path, '/admin') === 0 ||
     strpos($path, '/dashboard') === 0 ||
     strpos($path, '/inventory') === 0 ||
@@ -104,7 +133,14 @@ if (in_array($path, ['/user', '/admin', '/dashboard', '/inventory', '/pos', '/de
         exit;
     }
     
-    // If authenticated, serve dashboard
+    // Only sellers can access admin routes
+    if ($userRole !== 'seller') {
+        file_put_contents(__DIR__ . '/router.log', "  Admin route: user is not seller, redirecting to user page\n", FILE_APPEND);
+        require __DIR__ . '/frontend/User/index.html';
+        exit;
+    }
+    
+    // If authenticated seller, serve dashboard
     file_put_contents(__DIR__ . '/router.log', "  Protected route: serving dashboard.html\n", FILE_APPEND);
     require __DIR__ . '/frontend/Admin/dashboard.html';
     exit;
