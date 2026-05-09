@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Delivery Card Generator</title>
+  <link href="/assets/bootstrap.min.css" rel="stylesheet"/>
+    <script src="/assets/bootstrap.bundle.min.js"></script>
+  <style>
+    :root {
+      --peach: #f4a58a;
+      --peach-light: #fde8e0;
+      --peach-bg: #fdf0eb;
+      --card-bg: #fff8f5;
+      --border-color: #f4a58a;
+      --text-dark: #3a3a3a;
+      --fragile-red: #e74c3c;
+    }
+
+    body {
+      background: var(--peach-bg);
+      font-family: 'Nunito', 'Khmer OS', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 30px 15px;
+    }
+
+    .navbar {
+      width: 100%;
+      max-width: 980px;
+      background: #fff;
+      border: 1px solid #f4c2ae;
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 16px rgba(244,165,138,0.12);
+    }
+    .brand {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #5c3d2e;
+    }
+    .brand span { color: #f4a58a; }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a {
+      text-decoration: none;
+      color: #6b4c38;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .nav-links a:hover { background: #fde8e0; }
+    .nav-links .active { background: #f4a58a; color: #fff; }
+
+    h1.page-title {
+      font-size: 1.3rem;
+      color: #888;
+      font-weight: 700;
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+    }
+
+    /* ── Card wrapper ── */
+    .delivery-card {
+      background: var(--peach-light);
+      border-radius: 22px;
+      padding: 28px 24px 20px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(244,165,138,0.18), 0 2px 8px rgba(0,0,0,0.06);
+      position: relative;
+    }
+
+    /* ── Decorative blobs (background shapes) ── */
+    .delivery-card::before,
+    .delivery-card::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .delivery-card::before {
+      width: 90px; height: 90px;
+      background: var(--peach);
+      top: -20px; right: -20px;
+    }
+    .delivery-card::after {
+      width: 60px; height: 60px;
+      background: var(--peach);
+      bottom: 40px; left: -15px;
+    }
+
+    /* ── Title ── */
+    .card-title-wrap {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .card-title-wrap .delivery-text {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 2px;
+    }
+    .card-title-wrap .delivery-text span { display: inline-block; }
+    .card-title-wrap .delivery-text .d  { color: #ff9eb5; }
+    .card-title-wrap .delivery-text .e  { color: #a8d8ea; }
+    .card-title-wrap .delivery-text .l  { color: #fff176; -webkit-text-stroke: 1px #ccc; }
+    .card-title-wrap .delivery-text .i  { color: #b5ead7; }
+    .card-title-wrap .delivery-text .v  { color: #ffd6a5; }
+    .card-title-wrap .delivery-text .e2 { color: #ffb3c6; }
+    .card-title-wrap .delivery-text .r  { color: #c3b1e1; }
+    .card-title-wrap .delivery-text .y  { color: #a8d8ea; }
+
+    .card-title-wrap .card-text {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      margin-top: 2px;
+    }
+    .card-title-wrap .card-text .c  { color: #ffd6a5; }
+    .card-title-wrap .card-text .a  { color: #ff9eb5; }
+    .card-title-wrap .card-text .rd { color: #c3b1e1; }
+
+    /* ── Form fields ── */
+    .field-box {
+      background: #fff;
+      border: 1.5px solid #f4c2ae;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+    }
+    .field-box label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+      display: block;
+    }
+    .field-box input,
+    .field-box textarea {
+      border: none;
+      outline: none;
+      width: 100%;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+      resize: none;
+    }
+    .field-box textarea {
+      min-height: 60px;
+    }
+
+    /* ── Bottom two-column ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    /* ── Delivery provider dots ── */
+    .provider-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      font-size: 0.78rem;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+    .dot {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .dot-green  { background: #a8e6b3; }
+    .dot-pink   { background: #ffb3c6; }
+    .dot-yellow { background: #ffe166; }
+
+    /* ── Fragile section ── */
+    .fragile-section {
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 14px 8px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .fragile-icons {
+      display: flex;
+      gap: 6px;
+    }
+    .fragile-icons span {
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+    .fragile-text h3 {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #e67e22;
+      margin: 0 0 2px;
+      line-height: 1.1;
+    }
+    .fragile-text .sub {
+      font-size: 0.72rem;
+      color: #888;
+      margin: 0;
+    }
+    .fragile-badge {
+      background: var(--fragile-red);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      border-radius: 4px;
+      padding: 1px 6px;
+      letter-spacing: 1px;
+      display: inline-block;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #b08070;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    /* ── Print / Generate button ── */
+  
+   
+
+    /* ── Preview modal overlay ── */
+    .preview-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-overlay.show { display: flex; }
+    .preview-modal {
+      background: var(--peach-light);
+      border-radius: 22px;
+      padding: 28px 24px 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+      position: relative;
+    }
+    .preview-modal .close-btn {
+      position: absolute;
+      top: 12px; right: 16px;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: #aaa;
+      line-height: 1;
+    }
+    .preview-modal .field-box {
+      pointer-events: none;
+    }
+    .btn-print {
+      background: linear-gradient(135deg, #a8d8ea, #c3b1e1);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 10px 32px;
+      cursor: pointer;
+      margin-top: 14px;
+      width: 100%;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .delivery-card, .preview-modal { box-shadow: none; }
+      .btn-generate, .btn-print, .close-btn, .page-title { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="brand">Milk <span>App</span></div>
+  <nav class="nav-links">
+    <a href="new-order.html">New Order</a>
+    <a href="deleveryrc.html" class="active">Delivery</a>
+  </nav>
+</header>
+
+<p class="page-title">✦ DELIVERY CARD GENERATOR ✦</p>
+
+<!-- ══ FORM CARD ══ -->
+<div class="delivery-card">
+
+  <!-- Title -->
+  <div class="card-title-wrap">
+    <div class="delivery-text">
+      <span class="d">D</span><span class="e">e</span><span class="l">L</span><span class="i">i</span><span class="v">v</span><span class="e2">e</span><span class="r">R</span><span class="y">y</span>
+      </div>
+    <div class="card-text">
+      <span class="c">C</span><span class="a">a</span><span class="rd">rd</span>
+    </div>
+  </div>
+
+  <!-- Fields -->
+  <div class="field-box">
+    <label>លេខអតិថិជន (Customer ID)</label>
+    <input type="text" id="customerId" placeholder="បញ្ចូលលេខអតិថិជន…"/>
+  </div>
+
+  <div class="field-box">
+    <label>ឈ្មោះអតិថិជន (Customer Name)</label>
+    <input type="text" id="customerName" placeholder="បញ្ចូលឈ្មោះ…"/>
+  </div>
+
+  <div class="field-box">
+    <label>លេខអតិថិជន (Phone Number)</label>
+    <input type="tel" id="phone" placeholder="012 xxx xxx"/>
+  </div>
+
+  <div class="field-box">
+    <label>វិចារ (Note / Remark)</label>
+    <textarea id="note" placeholder="សរសេរចំណាំ…"></textarea>
+  </div>
+
+  <div class="two-col">
+    <div class="field-box" style="margin-bottom:0">
+      <label>សោរ (Seal)</label>
+      <input type="text" id="seal" placeholder="…"/>
+    </div>
+    <div class="field-box" style="margin-bottom:0">
+      <label>តម្លៃសរុប (Total Price)</label>
+      <input type="text" id="price" placeholder="$ …"/>
+    </div>
+  </div>
+
+  <!-- Provider dots -->
+  <div class="provider-row mt-3">
+    <label style="font-weight:700; font-size:0.78rem; margin:0;">ក្រុមហ៊ុន:</label>
+    <label style="cursor:pointer;">
+      <input type="radio" name="provider" value="វីរៈចាន់ដា"/> 
+   វីរៈប៊ុនថាន់
+    </label>
+  
+    <label style="cursor:pointer;">
+      <input type="radio" name="provider" value="J&T Express"/> 
+    </span>J&amp;T Express
+    </label>
+  </div>
+
+  <!-- Fragile -->
+  <div class="fragile-section">
+    <div class="fragile-icons">
+      <span>🥂</span>
+      <span>📦</span>
+      <span>🫶</span>
+    </div>
+    <div class="fragile-text">
+      <h3>ប្រយ័ត្នបែក ប្លែតសៀ <span class="fragile-badge">FRAGILE</span></h3>
+      <p class="sub">សូមកុំទម្លាក់ ប្លែរ</p>
+    </div>
+  </div>
+
+  <p class="footer-note">សូមអរគុណសម្រាប់ការកម្ម៉ង់ និងជំទាំអ្នកលើហោងយើងខ្ញុំ</p>
+
+  <button class="btn-generate" onclick="generateCard()">🎀 Generate Card</button>
+</div>
+
+
+<!-- ══ PREVIEW OVERLAY ══ -->
+<div class="preview-overlay" id="previewOverlay">
+  <div class="preview-modal" id="previewCard">
+    <button class="close-btn" onclick="closePreview()">✕</button>
+
+    <div class="card-title-wrap">
+      <div class="delivery-text">
+        <span class="d">D</span><span class="e">e</span><span class="l">L</span><span class="i">i</span><span class="v">v</span><span class="e2">e</span><span class="r">R</span><span class="y">y</span>
+      </div>
+      <div class="card-text">
+        <span class="c">C</span><span class="a">a</span><span class="rd">rd</span>
+      </div>
+    </div>
+
+    <div class="field-box"><label>លេខអតិថិជន</label><div id="p-customerId"></div></div>
+    <div class="field-box"><label>ឈ្មោះអតិថិជន</label><div id="p-customerName"></div></div>
+    <div class="field-box"><label>លេខទូរស័ព្ទ</label><div id="p-phone"></div></div>
+    <div class="field-box"><label>វិចារ</label><div id="p-note" style="white-space:pre-wrap;min-height:40px;"></div></div>
+
+    <div class="two-col">
+      <div class="field-box" style="margin-bottom:0"><label>សោរ</label><div id="p-seal"></div></div>
+      <div class="field-box" style="margin-bottom:0"><label>តម្លៃសរុប</label><div id="p-price"></div></div>
+    </div>
+
+    <div class="provider-row mt-3">
+      <span id="p-provider" style="font-weight:700;"></span>
+    </div>
+
+    <div class="fragile-section">
+      <div class="fragile-icons">
+        <span>🥂</span><span>📦</span><span>🫶</span>
+      </div>
+      <div class="fragile-text">
+        <h3>ប្រយ័ត្នបែក ប្លែតសៀ <span class="fragile-badge">FRAGILE</span></h3>
+        <p class="sub">សូមកុំទម្លាក់ ប្លែរ</p>
+      </div>
+    </div>
+
+    <p class="footer-note">សូមអរគុណសម្រាប់ការកម្ម៉ង់ និងជំទាំអ្នកលើហោងយើងខ្ញុំ</p>
+    <button class="btn-print" onclick="saveDeliveryCard()">💾 Save Card</button>
+    <button class="btn-print" onclick="printDeliveryPdf()">🖨️ Download PDF</button>
+    <button class="btn-print" onclick="window.print()">🖨️ Print Card</button>
+    <p id="saveMessage" style="text-align:center;font-size:0.8rem;color:#2a7;display:none;margin-top:8px;"></p>
+  </div>
+</div>
+
+<script>
+  function generateCard() {
+    const fields = {
+      'p-customerId': document.getElementById('customerId').value || '—',
+      'p-customerName': document.getElementById('customerName').value || '—',
+      'p-phone': document.getElementById('phone').value || '—',
+      'p-note': document.getElementById('note').value || '—',
+      'p-seal': document.getElementById('seal').value || '—',
+      'p-price': document.getElementById('price').value || '—',
+    };
+    Object.entries(fields).forEach(([id, val]) => {
+      document.getElementById(id).textContent = val;
+    });
+
+    const provider = document.querySelector('input[name="provider"]:checked');
+    const providerEl = document.getElementById('p-provider');
+    if (provider) {
+      const colors = { 'វីរៈចាន់ដា': '#a8e6b3', 'កាតិតូល': '#ffb3c6', 'J&T Express': '#ffe166' };
+      const color = colors[provider.value] || '#ddd';
+      providerEl.innerHTML = `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${color};margin-right:6px;vertical-align:middle;"></span>ក្រុមហ៊ុន: ${provider.value}`;
+    } else {
+      providerEl.textContent = 'ក្រុមហ៊ុន: —';
+    }
+
+    document.getElementById('previewOverlay').classList.add('show');
+  }
+
+  function closePreview() {
+    document.getElementById('previewOverlay').classList.remove('show');
+  }
+
+  function saveDeliveryCard() {
+    console.log('saveDeliveryCard called');
+    const cardData = {
+      customerId: document.getElementById('p-customerId').textContent.trim(),
+      customerName: document.getElementById('p-customerName').textContent.trim(),
+      phone: document.getElementById('p-phone').textContent.trim(),
+      note: document.getElementById('p-note').textContent.trim(),
+      seal: document.getElementById('p-seal').textContent.trim(),
+      price: document.getElementById('p-price').textContent.trim(),
+      provider: document.getElementById('p-provider').textContent.trim(),
+      savedAt: new Date().toISOString(),
+    };
+
+    // Stash in delivery cards history
+    const saved = JSON.parse(localStorage.getItem('savedDeliveryCards') || '[]');
+    saved.push(cardData);
+    localStorage.setItem('savedDeliveryCards', JSON.stringify(saved));
+    localStorage.setItem('lastSavedDeliveryCard', JSON.stringify(cardData));
+
+    // Sync into main delivery dashboard list
+    const milkDeliveries = JSON.parse(localStorage.getItem('milkDeliveries') || '[]');
+    const priceNumber = parseFloat(cardData.price.replace(/[^0-9.]/g, '')) || 0;
+    const deliveryItem = {
+      id: `SD-${Date.now()}`,
+      customer: cardData.customerName || 'Guest',
+      address: cardData.note || 'Generated from Delivery Card',
+      phone: cardData.phone || '—',
+      status: 'pending',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      items: [{ e: '📦', n: 'Auto-Saved Delivery', q: 1, p: priceNumber || 0 }],
+      note: cardData.note,
+    };
+    milkDeliveries.unshift(deliveryItem);
+    localStorage.setItem('milkDeliveries', JSON.stringify(milkDeliveries));
+
+    const msg = document.getElementById('saveMessage');
+    msg.textContent = `Saved delivery card (${cardData.customerId || 'NoID'}) and synchronized to Delivery page.`;
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2800);
+
+    closePreview();
+    window.location.href = 'delivery.html';
+  }
+
+  function printDeliveryPdf() {
+    console.log('printDeliveryPdf called');
+    const cardData = {
+      customerId: document.getElementById('p-customerId').textContent.trim(),
+      customerName: document.getElementById('p-customerName').textContent.trim(),
+      phone: document.getElementById('p-phone').textContent.trim(),
+      note: document.getElementById('p-note').textContent.trim(),
+      seal: document.getElementById('p-seal').textContent.trim(),
+      price: document.getElementById('p-price').textContent.trim(),
+      provider: document.getElementById('p-provider').textContent.trim(),
+    };
+
+    const jsPDFLib = window.jspdf && window.jspdf.jsPDF;
+    if (!jsPDFLib) {
+      alert('PDF generator is not available right now. Please refresh and try again.');
+      return;
+    }
+
+    const doc = new jsPDFLib({ unit: 'pt', format: 'a4' });
+    let y = 45;
+    const gap = 18;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Milk App — Delivery Card', 40, y);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 40, (y += 24));
+
+    doc.setFontSize(12);
+    y += 14; doc.text(`Customer ID: ${cardData.customerId}`, 40, y);
+    y += gap; doc.text(`Name: ${cardData.customerName}`, 40, y);
+    y += gap; doc.text(`Phone: ${cardData.phone}`, 40, y);
+    y += gap; doc.text(`Provider: ${cardData.provider}`, 40, y);
+    y += gap; doc.text(`Seal: ${cardData.seal}`, 40, y);
+    y += gap; doc.text(`Price: ${cardData.price}`, 40, y);
+    y += gap; doc.text('Note:', 40, y);
+    y += gap;
+    const split = doc.splitTextToSize(cardData.note || '—', 500);
+    doc.text(split, 40, y);
+
+    doc.save(`delivery-card-${cardData.customerId || Date.now()}.pdf`);
+    console.log('PDF saved');
+  }
+
+  // Close on backdrop click
+  document.getElementById('previewOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closePreview();
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/assets/bootstrap.bundle.min.js"></script>
+</body>
+</html>

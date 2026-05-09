@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milk App • Login</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      /* Soft "Milk" themed gradient */
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      min-height: 100vh;
+      color: #2d3436;
+    }
+
+    .navbar {
+     
+      background-color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    .card {
+      border: none;
+      border-radius: 24px;
+     
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Floating input style */
+    .form-control {
+      border-radius: 12px;
+      border: 2px solid #eee;
+      padding: 12px 16px;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+    }
+
+    .btn-primary {
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 600;
+      background: #0d6efd;
+      border: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(13, 110, 253, 0.2);
+    }
+
+    .brand-dot {
+      color: #0d6efd;
+    }
+
+    /* Subtle animation for the card */
+    .fade-in-up {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar navbar-expand-lg navbar-light sticky-top px-4">
+    <div class="container">
+      <a class="navbar-brand h4 fw-800 mb-0 text-primary" href="#">
+        Milk<span class="text-dark">App</span><span class="brand-dot">.</span>
+      </a>
+      <div class="ms-auto">
+        <a class="nav-link d-inline-block me-4 small fw-bold text-muted" href="login.html">Login</a>
+        <a class="btn btn-dark btn-sm px-3 rounded-pill" href="register.html">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;">
+    <section class="w-100 fade-in-up" style="max-width: 400px;">
+      
+      <div class="text-center mb-4">
+        <h2 class="fw-800 mb-1">Welcome back</h2>
+        <p class="text-muted">Please enter your details to sign in.</p>
+      </div>
+
+      <div class="card shadow-xl">
+        <div class="card-body p-4 p-md-5">
+          <form id="loginForm">
+            <div class="mb-3">
+              <label for="loginUser" class="form-label small fw-bold text-secondary">Username</label>
+              <input type="text" id="loginUser" class="form-control" placeholder="johndoe" autocomplete="username" required>
+            </div>
+
+            <div class="mb-4">
+              <div class="d-flex justify-content-between">
+                <label for="loginPass" class="form-label small fw-bold text-secondary">Password</label>
+                <a href="#" class="small text-decoration-none fw-bold">Forgot?</a>
+              </div>
+              <input type="password" id="loginPass" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mb-4 shadow-sm">
+              Sign In
+            </button>
+
+            <div class="position-relative mb-4">
+              <hr class="text-muted">
+              <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 small text-muted">or</span>
+            </div>
+
+            <p class="text-center mb-0 small text-muted">
+              New here? <a href="register.html" class="text-primary text-decoration-none fw-bold">Create an account</a>
+            </p>
+          </form>
+        </div>
+      </div>
+      
+      <footer class="mt-5 text-center">
+        <p class="small text-muted">&copy; 2026 Milk App Inc.</p>
+      </footer>
+    </section>
+  </main>
+
+  <script type="module" src="/dist/auth.js?v=2"></script>
+</body>
+</html>

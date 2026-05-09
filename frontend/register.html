@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milk App • Register</title>
+  <link href="/assets/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+ 
+  </style>
+</head>
+<body class="bg-light">
+  <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4">
+    <div class="container-fluid">
+      <h1 class="navbar-brand mb-0 h4 fw-bold text-primary">Milk App</h1>
+      <div class="nav-right">
+        <a class="nav-link d-inline-block me-3" href="login.html">Login</a>
+        <a class="btn btn-primary btn-sm" href="register.html">Register</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="d-flex align-items-center justify-content-center" style="min-height: 90vh;">
+    <section class="w-100" style="max-width: 500px;">
+      <div class="card border-0 shadow-lg">
+        <div class="card-body p-4 p-md-5">
+          <form id="registerForm">
+            <span class="d-inline-block mb-2 small text-uppercase text-primary fw-bold">Welcome 👋</span>
+            <h2 class="text-center mb-1">Create Account</h2>
+            <p class="text-center text-muted small mb-4">Join the Milk App community</p>
+
+            <!-- Account Type Selection -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">I want to:</label>
+              <div class="btn-group w-100" role="group">
+                <input type="radio" class="btn-check" name="role" id="roleCustomer" value="customer" checked>
+                <label class="btn btn-outline-primary" for="roleCustomer">
+                  🛒 Shop & Order
+                </label>
+                <input type="radio" class="btn-check" name="role" id="roleMerchant" value="seller">
+                <label class="btn btn-outline-success" for="roleMerchant">
+                  💼 Sell Products (Merchant)
+                </label>
+              </div>
+            
+
+            <!-- Common Fields -->
+            <div class="mb-3">
+              <label for="registerUser" class="form-label">Username *</label>
+              <input type="text" id="registerUser" class="form-control" placeholder="Choose a username" autocomplete="username" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="registerEmail" class="form-label">Email Address</label>
+              <input type="email" id="registerEmail" class="form-control" placeholder="your@email.com" autocomplete="email">
+            </div>
+
+            <div class="mb-3">
+              <label for="registerPhone" class="form-label">Phone Number</label>
+              <input type="tel" id="registerPhone" class="form-control" placeholder="012 345 678" autocomplete="tel">
+            </div>
+
+            <div class="mb-4">
+              <label for="registerPass" class="form-label">Password *</label>
+              <input type="password" id="registerPass" class="form-control" placeholder="Create a strong password" autocomplete="new-password" required minlength="4">
+            </div>
+
+       
+
+            <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm" id="submitBtn">
+              Create my account
+            </button>
+
+            <p class="text-center mt-4 mb-0 small text-muted">
+              Already have an account?
+              <a href="login.html" class="text-decoration-none fw-bold">Login here</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/dist/auth.js?v=2"></script>
+</body>
+</html>

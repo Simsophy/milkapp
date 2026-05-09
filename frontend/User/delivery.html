@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milk App – Delivery</title>
+<style>
+  :root {
+    --cream:#fdf6ec; --ivory:#fff9f2; --milk-white:#ffffff;
+    --warm-brown:#5c3d2e; --caramel:#c8832a; --caramel-light:#f0c27f;
+    --caramel-bg:#fef3e2; --sage:#7a9e7e; --sage-bg:#eaf3eb;
+    --rose:#c0736a; --rose-bg:#fbeae8; --sky:#6a8fc0; --sky-bg:#e8eef8;
+    --text-dark:#2b1d0e; --text-mid:#6b4c38; --text-light:#a68970;
+    --border:#e8d5c0; --nav-h:64px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);}
+
+  nav.topnav{
+    position:sticky;top:0;z-index:200;height:var(--nav-h);
+    background:var(--milk-white);border-bottom:1.5px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 2rem;box-shadow:0 2px 12px rgba(92,61,46,0.07);
+  }
+  .brand{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--warm-brown);text-decoration:none;}
+  .brand em{color:var(--caramel);font-style:normal;}
+  .nav-links{display:flex;align-items:center;gap:0.25rem;}
+  .nav-links a{
+    text-decoration:none;font-size:0.875rem;font-weight:500;
+    color:var(--text-mid);padding:0.4rem 0.9rem;border-radius:8px;
+    transition:background 0.18s,color 0.18s;
+  }
+  .nav-links a:hover{background:var(--cream);color:var(--warm-brown);}
+  .nav-links a.active{background:var(--caramel);color:#fff;}
+  .nav-links a.nav-new{background:var(--caramel);color:#fff;box-shadow:0 3px 10px rgba(200,131,42,0.3);}
+  .nav-links a.nav-new:hover{background:var(--warm-brown);}
+  .nav-links a.nav-logout{color:var(--rose);border:1.5px solid var(--border);}
+  .nav-links a.nav-logout:hover{background:var(--rose-bg);border-color:var(--rose);}
+  .nav-divider{width:1px;height:20px;background:var(--border);margin:0 0.3rem;}
+  .lang-switch{display:flex;gap:0.3rem;margin-left:0.3rem;}
+  .lang-btn{border:1.5px solid var(--border);background:var(--milk-white);color:var(--text-mid);border-radius:8px;padding:0.2rem 0.5rem;font-size:0.72rem;font-weight:700;cursor:pointer;}
+  .lang-btn.active{background:var(--caramel);border-color:var(--caramel);color:#fff;}
+
+  .page{max-width:1200px;margin:0 auto;padding:2.5rem 2rem;}
+  .page-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--warm-brown);margin-bottom:.25rem;}
+  .page-sub{color:var(--text-light);font-size:.9rem;margin-bottom:2rem;}
+
+  /* STATUS STATS */
+  .del-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+  .del-stat{
+    background:var(--milk-white);border-radius:14px;border:1.5px solid var(--border);
+    padding:1.1rem 1.25rem;display:flex;align-items:center;gap:.85rem;
+    animation:fadeUp .4s ease both;
+  }
+  .del-stat:nth-child(1){animation-delay:.05s} .del-stat:nth-child(2){animation-delay:.1s}
+  .del-stat:nth-child(3){animation-delay:.15s} .del-stat:nth-child(4){animation-delay:.2s}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .ds-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+  .ds-label{font-size:.72rem;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+  .ds-value{font-size:1.5rem;font-weight:700;color:var(--text-dark);}
+
+  /* LAYOUT */
+  .del-layout{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;}
+
+  /* DELIVERY LIST */
+  .panel{background:var(--milk-white);border-radius:16px;border:1.5px solid var(--border);overflow:hidden;animation:fadeUp .4s ease .25s both;}
+  .panel-head{
+    padding:1.25rem 1.5rem;border-bottom:1.5px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  }
+  .panel-head h3{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--warm-brown);}
+  .status-tabs{display:flex;gap:.35rem;}
+  .st-tab{
+    padding:.3rem .85rem;border-radius:50px;border:1.5px solid var(--border);
+    background:transparent;color:var(--text-mid);font-size:.78rem;font-weight:500;cursor:pointer;transition:all .18s;
+  }
+  .st-tab.active{background:var(--caramel);border-color:var(--caramel);color:#fff;}
+  .st-tab:hover:not(.active){border-color:var(--caramel);color:var(--caramel);}
+
+  /* DELIVERY CARD */
+  .del-card{
+    padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);
+    display:flex;gap:1rem;align-items:flex-start;cursor:pointer;transition:background .15s;
+  }
+  .del-card:last-child{border-bottom:none;}
+  .del-card:hover{background:var(--cream);}
+  .del-card.selected-card{background:var(--caramel-bg);}
+
+  .dc-status-dot{
+    width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;
+  }
+  .dc-status-dot.pending   {background:var(--caramel);}
+  .dc-status-dot.transit   {background:var(--sky);}
+  .dc-status-dot.delivered {background:var(--sage);}
+  .dc-status-dot.cancelled {background:var(--rose);}
+
+  .dc-body{flex:1;min-width:0;}
+  .dc-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem;}
+  .dc-id{font-weight:700;font-size:.8rem;color:var(--caramel);}
+  .dc-name{font-weight:600;font-size:.875rem;color:var(--text-dark);}
+  .dc-products{font-size:.75rem;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dc-meta{display:flex;align-items:center;gap:.75rem;margin-top:.4rem;}
+  .dc-time{font-size:.72rem;color:var(--text-light);}
+  .dc-total{font-size:.8rem;font-weight:700;color:var(--caramel);}
+
+  .badge{display:inline-block;padding:2px 9px;border-radius:50px;font-size:.7rem;font-weight:600;}
+  .badge.pending   {background:var(--caramel-bg);color:var(--caramel);}
+  .badge.transit   {background:var(--sky-bg);color:var(--sky);}
+  .badge.delivered {background:var(--sage-bg);color:var(--sage);}
+  .badge.cancelled {background:var(--rose-bg);color:var(--rose);}
+
+  /* DETAIL PANEL */
+  .detail-panel{background:var(--milk-white);border-radius:16px;border:1.5px solid var(--border);animation:fadeUp .4s ease .3s both;}
+  .detail-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--text-light);text-align:center;font-size:.875rem;}
+  .detail-empty .di{font-size:2.5rem;margin-bottom:.5rem;}
+
+  .detail-head{padding:1.25rem 1.5rem;border-bottom:1.5px solid var(--border);}
+  .detail-head h4{font-family:'Playfair Display',serif;font-size:1rem;color:var(--warm-brown);margin-bottom:.2rem;}
+  .detail-head p{font-size:.78rem;color:var(--text-light);}
+
+  .detail-body{padding:1.25rem 1.5rem;}
+  .detail-row{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.83rem;}
+  .detail-row:last-child{border-bottom:none;}
+  .detail-row .dr-label{color:var(--text-light);font-weight:500;}
+  .detail-row .dr-val{font-weight:600;color:var(--text-dark);text-align:right;}
+
+  .items-list{margin-top:1rem;}
+  .items-list h5{font-size:.78rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;}
+  .order-item-row{display:flex;align-items:center;gap:.6rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+  .order-item-row:last-child{border-bottom:none;}
+  .oi-emoji{font-size:1.2rem;}
+  .oi-name{flex:1;font-size:.83rem;font-weight:500;color:var(--text-dark);}
+  .oi-qty{font-size:.78rem;color:var(--text-light);}
+  .oi-price{font-size:.83rem;font-weight:700;color:var(--caramel);}
+
+  .detail-actions{padding:1rem 1.5rem;border-top:1.5px solid var(--border);display:flex;flex-direction:column;gap:.5rem;}
+  .det-btn{
+    width:100%;padding:.65rem;border-radius:9px;border:none;
+    font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;
+  }
+  .det-btn.primary{background:var(--caramel);color:#fff;box-shadow:0 3px 10px rgba(200,131,42,.3);}
+  .det-btn.primary:hover{background:var(--warm-brown);}
+  .det-btn.secondary{background:var(--sky-bg);color:var(--sky);border:1.5px solid var(--sky);}
+  .det-btn.secondary:hover{background:var(--sky);color:#fff;}
+  .det-btn.success{background:var(--sage-bg);color:var(--sage);border:1.5px solid var(--sage);}
+  .det-btn.success:hover{background:var(--sage);color:#fff;}
+  .det-btn.danger{background:transparent;color:var(--rose);border:1.5px solid var(--border);}
+  .det-btn.danger:hover{background:var(--rose-bg);border-color:var(--rose);}
+
+  /* TRACK TIMELINE */
+  .timeline{padding:1rem 1.5rem;border-top:1.5px solid var(--border);}
+  .timeline h5{font-size:.78rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1rem;}
+  .tl-step{display:flex;gap:.75rem;margin-bottom:.85rem;position:relative;}
+  .tl-step:last-child{margin-bottom:0;}
+  .tl-dot{
+    width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:3px;
+    border:2.5px solid var(--border);background:var(--milk-white);
+  }
+  .tl-dot.done{background:var(--sage);border-color:var(--sage);}
+  .tl-dot.active{background:var(--caramel);border-color:var(--caramel);box-shadow:0 0 0 3px var(--caramel-bg);}
+  .tl-line{position:absolute;left:6px;top:18px;width:2px;height:calc(100% + .85rem - 18px);background:var(--border);}
+  .tl-step:last-child .tl-line{display:none;}
+  .tl-text .tl-title{font-size:.82rem;font-weight:600;color:var(--text-dark);}
+  .tl-text .tl-time{font-size:.72rem;color:var(--text-light);}
+
+  @media(max-width:900px){.del-stats{grid-template-columns:repeat(2,1fr)};.del-layout{grid-template-columns:1fr};}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="brand" href="/admin">Milk <em>App</em></a>
+  <div class="nav-links">
+    <a href="/admin" class="admin-only" data-i18n="navDashboard">📊 Dashboard</a>
+    <a href="/admin/inventory" class="admin-only" data-i18n="navInventory">📦 Inventory</a>
+    <a href="/user" class="nav-new" data-i18n="navNewOrder">＋ New Order</a>
+    <a href="/admin/delivery" class="active" data-i18n="navDelivery">🚚 Delivery</a>
+    <div class="lang-switch" aria-label="Language switch">
+      <button class="lang-btn" type="button" data-lang="en">EN</button>
+      <button class="lang-btn" type="button" data-lang="kh">KH</button>
+    </div>
+    <div class="nav-divider"></div>
+    <a href="/login" class="nav-logout" data-i18n="navLogout">⏻ Logout</a>
+  </div>
+</nav>
+
+<div class="page">
+  <h1 class="page-title">Delivery</h1>
+  <p class="page-sub">Track and manage all outgoing milk orders.</p>
+
+  <!-- STATS -->
+  <div class="del-stats">
+    <div class="del-stat">
+      <div class="ds-icon" style="background:var(--caramel-bg)">⏳</div>
+      <div><div class="ds-label">Pending</div><div class="ds-value" id="sPending">0</div></div>
+    </div>
+    <div class="del-stat">
+      <div class="ds-icon" style="background:var(--sky-bg)">🚚</div>
+      <div><div class="ds-label">In Transit</div><div class="ds-value" id="sTransit">0</div></div>
+    </div>
+    <div class="del-stat">
+      <div class="ds-icon" style="background:var(--sage-bg)">✅</div>
+      <div><div class="ds-label">Delivered</div><div class="ds-value" id="sDelivered">0</div></div>
+    </div>
+    <div class="del-stat">
+      <div class="ds-icon" style="background:var(--rose-bg)">❌</div>
+      <div><div class="ds-label">Cancelled</div><div class="ds-value" id="sCancelled">0</div></div>
+    </div>
+  </div>
+
+  <div class="del-layout">
+    <!-- LIST -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>All Deliveries</h3>
+        <div class="status-tabs" id="statusTabs">
+          <button class="st-tab active" data-st="all">All</button>
+          <button class="st-tab" data-st="pending">Pending</button>
+          <button class="st-tab" data-st="transit">In Transit</button>
+          <button class="st-tab" data-st="delivered">Delivered</button>
+        </div>
+      </div>
+      <div id="deliveryList"></div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-empty">
+        <div class="di">📋</div>
+        <p>Select a delivery to<br>view details</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const DEFAULT_DELIVERIES = [
+  {id:'ORD-045', customer:'Sophea Mao',   address:'St. 271, Phnom Penh', phone:'012 345 678',
+   status:'delivered', time:'08:30 AM', items:[{e:'🥛',n:'Full Cream Milk',q:1,p:2.50},{e:'🫙',n:'Plain Yogurt',q:2,p:1.80}], note:''},
+  {id:'ORD-044', customer:'Ratha Kim',    address:'Russian Blvd, PP',    phone:'011 234 567',
+   status:'transit',   time:'09:15 AM', items:[{e:'🍫',n:'Chocolate Milk',q:3,p:2.80}], note:'Leave at door'},
+  {id:'ORD-043', customer:'Dara Phan',   address:'Norodom Blvd, PP',    phone:'096 111 222',
+   status:'delivered', time:'07:50 AM', items:[{e:'🧀',n:'Cheddar Cheese',q:1,p:5.50},{e:'🧈',n:'Salted Butter',q:1,p:3.50}], note:''},
+  {id:'ORD-042', customer:'Lina Sok',    address:'Charles de Gaulle, PP',phone:'078 999 111',
+   status:'pending',   time:'10:00 AM', items:[{e:'🌿',n:'Organic Milk',q:2,p:3.80}], note:'Call before delivery'},
+  {id:'ORD-041', customer:'Vanna Chan',  address:'Monivong Blvd, PP',   phone:'012 555 777',
+   status:'cancelled', time:'10:30 AM', items:[{e:'🍓',n:'Strawberry Milk',q:4,p:2.80}], note:''},
+  {id:'ORD-040', customer:'Bopha Yim',   address:'Sihanouk Blvd, PP',   phone:'095 333 444',
+   status:'delivered', time:'07:10 AM', items:[{e:'🫙',n:'Greek Yogurt',q:1,p:2.50},{e:'🍶',n:'Whipping Cream',q:1,p:4.20}], note:''},
+  {id:'ORD-039', customer:'Piseth Noun', address:'Olympic, Phnom Penh', phone:'089 222 888',
+   status:'transit',   time:'09:45 AM', items:[{e:'🍵',n:'Matcha Milk',q:2,p:3.20},{e:'🍯',n:'Honey Milk',q:1,p:3.00}], note:''},
+  {id:'ORD-038', customer:'Makara Heng', address:'Toul Kork, PP',       phone:'017 777 333',
+   status:'pending',   time:'11:00 AM', items:[{e:'🥛',n:'A2 Milk',q:1,p:4.20},{e:'🍑',n:'Fruit Yogurt',q:2,p:2.20}], note:'Fragile'},
+];
+
+let DELIVERIES = loadDeliveries();
+
+let activeFilter='all';
+let selectedId=null;
+
+function getTotal(d){ return d.items.reduce((s,i)=>s+i.p*i.q,0); }
+
+function loadDeliveries(){
+  try {
+    const raw = localStorage.getItem('milkDeliveries');
+    if (!raw) return JSON.parse(JSON.stringify(DEFAULT_DELIVERIES));
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return JSON.parse(JSON.stringify(DEFAULT_DELIVERIES));
+    return parsed;
+  } catch {
+    return JSON.parse(JSON.stringify(DEFAULT_DELIVERIES));
+  }
+}
+
+function persistDeliveries(){
+  localStorage.setItem('milkDeliveries', JSON.stringify(DELIVERIES));
+}
+
+function updateStats(){
+  document.getElementById('sPending').textContent   = DELIVERIES.filter(d=>d.status==='pending').length;
+  document.getElementById('sTransit').textContent   = DELIVERIES.filter(d=>d.status==='transit').length;
+  document.getElementById('sDelivered').textContent = DELIVERIES.filter(d=>d.status==='delivered').length;
+  document.getElementById('sCancelled').textContent = DELIVERIES.filter(d=>d.status==='cancelled').length;
+}
+
+function statusLabel(s){ return {pending:'Pending',transit:'In Transit',delivered:'Delivered',cancelled:'Cancelled'}[s]; }
+
+function renderList(){
+  const list = activeFilter==='all' ? DELIVERIES : DELIVERIES.filter(d=>d.status===activeFilter);
+  const el = document.getElementById('deliveryList');
+  if(!list.length){ el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-light);font-size:.875rem">No deliveries found.</div>'; return; }
+  el.innerHTML = list.map(d=>`
+    <div class="del-card ${selectedId===d.id?'selected-card':''}" onclick="selectDelivery('${d.id}')">
+      <div class="dc-status-dot ${d.status}"></div>
+      <div class="dc-body">
+        <div class="dc-top">
+          <span class="dc-id">#${d.id}</span>
+          <span class="badge ${d.status}">${statusLabel(d.status)}</span>
+        </div>
+        <div class="dc-name">${d.customer}</div>
+        <div class="dc-products">${d.items.map(i=>i.e+' '+i.n).join(', ')}</div>
+        <div class="dc-meta">
+          <span class="dc-time">🕐 ${d.time}</span>
+          <span class="dc-total">$${(getTotal(d)*1.1).toFixed(2)}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function getTimeline(status){
+  const steps=[
+    {title:'Order Placed',   time:'Confirmed'},
+    {title:'Preparing',      time:'Packing items'},
+    {title:'Out for Delivery',time:'Driver assigned'},
+    {title:'Delivered',      time:'Completed'},
+  ];
+  const stageMap={pending:1,transit:2,delivered:3,cancelled:0};
+  const stage=stageMap[status];
+  return steps.map((s,i)=>{
+    const done=i<stage;const active=i===stage&&status!=='cancelled';
+    return `<div class="tl-step">
+      <div class="tl-dot ${done?'done':active?'active':''}"></div>
+      <div class="tl-line"></div>
+      <div class="tl-text">
+        <div class="tl-title">${s.title}</div>
+        <div class="tl-time">${done||active?s.time:'Waiting…'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectDelivery(id){
+  selectedId=id;
+  renderList();
+  const d=DELIVERIES.find(x=>x.id===id);
+  const sub=getTotal(d); const grand=sub*1.1;
+  const dp=document.getElementById('detailPanel');
+  dp.innerHTML=`    <div class="detail-head">
+      <h4>#${d.id} — ${d.customer}</h4>
+      <p>${d.address} · ${d.phone}</p>
+    </div>
+    <div class="detail-body">
+      <div class="detail-row"><span class="dr-label">Status</span><span class="dr-val"><span class="badge ${d.status}">${statusLabel(d.status)}</span></span></div>
+      <div class="detail-row"><span class="dr-label">Time</span><span class="dr-val">${d.time}</span></div>
+      <div class="detail-row"><span class="dr-label">Subtotal</span><span class="dr-val">$${sub.toFixed(2)}</span></div>
+      <div class="detail-row"><span class="dr-label">Tax (10%)</span><span class="dr-val">$${(sub*.1).toFixed(2)}</span></div>
+      <div class="detail-row"><span class="dr-label">Total</span><span class="dr-val" style="color:var(--caramel)">$${grand.toFixed(2)}</span></div>
+      ${d.note?`<div class="detail-row"><span class="dr-label">Note</span><span class="dr-val">${d.note}</span></div>`:''}
+      <div class="items-list">
+        <h5>Items Ordered</h5>
+        ${d.items.map(i=>`<div class="order-item-row">
+          <span class="oi-emoji">${i.e}</span>
+          <span class="oi-name">${i.n}</span>
+          <span class="oi-qty">×${i.q}</span>
+          <span class="oi-price">$${(i.p*i.q).toFixed(2)}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="timeline">
+      <h5>Delivery Timeline</h5>
+      ${getTimeline(d.status)}
+    </div>
+    <div class="detail-actions">
+      <button class="det-btn success" onclick="saveDeliveryRecord('${d.id}')">💾 Save Delivery</button>
+      ${d.status==='pending'?`<button class="det-btn secondary" onclick="updateStatus('${d.id}','transit')">🚚 Mark as In Transit</button>`:''}
+      ${d.status==='transit'?`<button class="det-btn primary" onclick="updateStatus('${d.id}','delivered')">✅ Mark as Delivered</button>`:''}
+      ${d.status!=='delivered'&&d.status!=='cancelled'?`<button class="det-btn danger" onclick="updateStatus('${d.id}','cancelled')">✕ Cancel Delivery</button>`:''}
+      <button class="det-btn" style="background:var(--cream);color:var(--text-mid);border:1.5px solid var(--border)" onclick="printDelivery('${d.id}')">🖨️ Print Receipt</button>
+    </div>
+  `;
+
+  // Show payment options for pending orders
+  if (window.PaymentModule && d.status === 'pending') {
+    window.PaymentModule.showPaymentOptions(d.id, grand);
+  }
+}
+
+function saveDeliveryRecord(id){
+  const d = DELIVERIES.find(x=>x.id===id);
+  if (!d) return;
+  persistDeliveries();
+  localStorage.setItem('milkLastSavedDeliveryId', id);
+  alert(`Delivery ${id} saved successfully.`);
+}
+
+function printDelivery(id){
+  const d = DELIVERIES.find(x=>x.id===id);
+  if (!d) return;
+
+  const sub = getTotal(d);
+  const tax = sub * 0.1;
+  const total = sub + tax;
+  const now = new Date().toLocaleString();
+
+  const jsPDFLib = window.jspdf && window.jspdf.jsPDF;
+  if (!jsPDFLib) {
+    alert('PDF generator is not available right now. Please refresh and try again.');
+    return;
+  }
+
+  const doc = new jsPDFLib({ unit: 'pt', format: 'a4' });
+  let y = 50;
+  const lineGap = 18;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('Milk App - Delivery Receipt', 40, y);
+
+  y += 24;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(90, 90, 90);
+  doc.text(`Generated: ${now}`, 40, y);
+
+  doc.setTextColor(30, 30, 30);
+  y += 28;
+  doc.setFontSize(12);
+  doc.text(`Order ID: #${d.id}`, 40, y);
+  y += lineGap;
+  doc.text(`Customer: ${d.customer}`, 40, y);
+  y += lineGap;
+  doc.text(`Phone: ${d.phone}`, 40, y);
+  y += lineGap;
+  doc.text(`Address: ${d.address}`, 40, y);
+  y += lineGap;
+  doc.text(`Status: ${statusLabel(d.status)}`, 40, y);
+
+  y += 28;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Items', 40, y);
+  y += 14;
+  doc.setDrawColor(215, 215, 215);
+  doc.line(40, y, 555, y);
+
+  y += 18;
+  doc.setFont('helvetica', 'normal');
+  d.items.forEach((i) => {
+    const left = `${i.n} x${i.q}`;
+    const right = `$${(i.p * i.q).toFixed(2)}`;
+    doc.text(left, 40, y);
+    doc.text(right, 555, y, { align: 'right' });
+    y += lineGap;
+  });
+
+  y += 8;
+  doc.line(40, y, 555, y);
+  y += 20;
+  doc.text(`Subtotal`, 40, y);
+  doc.text(`$${sub.toFixed(2)}`, 555, y, { align: 'right' });
+  y += lineGap;
+  doc.text(`Tax (10%)`, 40, y);
+  doc.text(`$${tax.toFixed(2)}`, 555, y, { align: 'right' });
+  y += lineGap;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Total`, 40, y);
+  doc.text(`$${total.toFixed(2)}`, 555, y, { align: 'right' });
+
+  doc.save(`delivery-${d.id}.pdf`);
+}
+
+function updateStatus(id, newStatus){
+  const d=DELIVERIES.find(x=>x.id===id);
+  d.status=newStatus;
+  persistDeliveries();
+  updateStats();
+  renderList();
+  selectDelivery(id);
+}
+
+document.getElementById('statusTabs').addEventListener('click',e=>{
+  const tab=e.target.closest('.st-tab');if(!tab)return;
+  document.querySelectorAll('.st-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  activeFilter=tab.dataset.st;
+  renderList();
+});
+
+updateStats();
+renderList();
+
+const translations = {
+  en: {
+    navDashboard: '📊 Dashboard',
+    navInventory: '📦 Inventory',
+    navNewOrder: '＋ New Order',
+    navDelivery: '🚚 Delivery',
+    navLogout: '⏻ Logout'
+  },
+  kh: {
+    navDashboard: '📊 ផ្ទាំងគ្រប់គ្រង',
+    navInventory: '📦 ស្តុក',
+    navNewOrder: '＋ បញ្ជាទិញថ្មី',
+    navDelivery: '🚚 ដឹកជញ្ជូន',
+    navLogout: '⏻ ចាកចេញ'
+  }
+};
+
+const langButtons = document.querySelectorAll('.lang-btn');
+function applyLanguage(lang) {
+  const dict = translations[lang] || translations.en;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    if (key && dict[key]) el.textContent = dict[key];
+  });
+  langButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.lang === lang));
+  localStorage.setItem('milkLang', lang);
+}
+
+langButtons.forEach((btn) => btn.addEventListener('click', () => applyLanguage(btn.dataset.lang || 'en')));
+applyLanguage(localStorage.getItem('milkLang') || 'en');
+</script>
+<script type="module" src="/js/payment.js"></script>
+<script>
+  // Initialize payment module after script loads
+  if (window.PaymentModule && window.PaymentModule.initPaymentModule) {
+    window.PaymentModule.initPaymentModule();
+  }
+</script>
+<script src="/js/roleControl.js"></script>
+<script>enforceUserOrAdmin();</script>
+</body>
+</html>

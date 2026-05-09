@@ -1,0 +1,13 @@
+{
+  "server": {
+    "baseDir": "./",
+    "routes": {
+      "/dist": "dist",
+      "/js": "js"
+    }
+  },
+  "port": 3000,
+  "open": true,
+  "files": ["*.html", "dist/**/*.js", "js/**/*.ts"],
+  "reloadDelay": 500
+}

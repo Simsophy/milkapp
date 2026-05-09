@@ -1,0 +1,9 @@
+node_modules/
+router.log
+cookies.txt
+.claude/
+frontend/.next
+node_modules
+.env
+dist
+build

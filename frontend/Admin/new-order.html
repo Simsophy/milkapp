@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Milk App - New Order</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #fdf6ec; color: #2b1d0e; }
+    .navbar {
+      background: #fff; border-bottom: 1px solid #e8d5c0; height: 64px;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+    }
+    .brand { font-size: 1.4rem; font-weight: 700; color: #5c3d2e; }
+    .brand span { color: #c8832a; }
+    .nav-links { display: flex; gap: 10px; align-items: center; }
+    .nav-links a { text-decoration: none; color: #6b4c38; padding: 8px 12px; border-radius: 8px; font-size: 14px; }
+    .nav-links a:hover { background: #f6ece1; }
+    .nav-links .active { background: #c8832a; color: #fff; }
+    .container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+    .card { background: #fff; border: 1px solid #e8d5c0; border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(92,61,46,0.08); }
+    .btn {
+      display: inline-block; margin-top: 12px; background: #c8832a; color: #fff;
+      text-decoration: none; padding: 10px 14px; border-radius: 8px; font-weight: 600;
+    }
+    .btn:hover { background: #5c3d2e; }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="brand">Milk <span>App</span></div>
+    <nav class="nav-links">
+      <a href="/admin" class="admin-only">Dashboard</a>
+      <a href="/admin/inventory" class="admin-only">Inventory</a>
+      <a href="/user/new-order" class="active">New Order</a>
+      <a href="/user/delivery">Delivery</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>New Order</h2>
+      <p>This page is linked from the navigation and opens the order screen.</p>
+      <a class="btn" href="/user">Open Order Screen</a>
+    </div>
+  </main>
+  <script src="/js/roleControl.js"></script>
+  <script>enforceUserOrAdmin();</script>
+</body>
+</html>
