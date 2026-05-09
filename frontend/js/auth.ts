@@ -1,4 +1,4 @@
-﻿const API_BASE = '/routes/api.php';
+const API_BASE = '/routes/api.php';
 
 function routeByRole(role?: string): string {
     // Map roles to their home pages - root "/" will route based on role
@@ -35,15 +35,27 @@ if (roleCustomer) roleCustomer.addEventListener('change', toggleRoleFields);
 if (roleMerchant) roleMerchant.addEventListener('change', toggleRoleFields);
 
 // If already logged in, redirect
-fetch(`${API_BASE}?action=me`)
-    .then((res) => res.json())
+fetch(`${API_BASE}?action=me`, { credentials: 'include' })
+    .then(async (res) => {
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+        const text = await res.text();
+        try {
+            return JSON.parse(text);
+        } catch {
+            console.error('Auth check: Server returned non-JSON:', text.substring(0, 100));
+            throw new Error('Invalid JSON response');
+        }
+    })
     .then((result) => {
         if (result.success) {
             window.location.href = routeAfterAuth(result.user?.role);
         }
     })
-    .catch(() => {
-        // ignore check errors
+    .catch((error) => {
+        console.log('Auth check:', error.message || 'Not logged in');
+        // Not logged in, that's fine
     });
 
 if (loginForm) {
@@ -52,8 +64,14 @@ if (loginForm) {
 
         const username = (document.getElementById('loginUser') as HTMLInputElement).value;
         const password = (document.getElementById('loginPass') as HTMLInputElement).value;
+        const submitBtn = loginForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
 
         try {
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Logging in...';
+            }
+
             const response = await fetch(`${API_BASE}?action=login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -61,7 +79,19 @@ if (loginForm) {
                 body: JSON.stringify({ username, password })
             });
 
-            const result = await response.json();
+            // Get response as text first to handle non-JSON responses
+            const textResponse = await response.text();
+            
+            // Try to parse as JSON
+            let result;
+            try {
+                result = JSON.parse(textResponse);
+            } catch {
+                console.error('Login: Server returned non-JSON:', textResponse.substring(0, 200));
+                alert('Server error: Invalid response format. Please check the backend.');
+                return;
+            }
+
             if (result.success) {
                 const role = result.user?.role;
                 window.location.href = routeAfterAuth(role);
@@ -71,6 +101,11 @@ if (loginForm) {
         } catch (error) {
             console.error('Login Error:', error);
             alert('Unable to login right now. Please try again.');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
+            }
         }
     });
 }
@@ -113,7 +148,18 @@ if (registerForm) {
                 body: JSON.stringify(payload)
             });
 
-            const result = await response.json();
+            // Get response as text first to handle non-JSON responses
+            const textResponse = await response.text();
+            
+            // Try to parse as JSON
+            let result;
+            try {
+                result = JSON.parse(textResponse);
+            } catch {
+                console.error('Register: Server returned non-JSON:', textResponse.substring(0, 200));
+                alert('Server error: Invalid response format. Please check the backend.');
+                return;
+            }
 
             if (result.success) {
                 alert('Account created successfully!');
