@@ -44,7 +44,10 @@ set_error_handler(function ($severity, $message, $file, $line) {
     throw new ErrorException($message, 0, $severity, $file, $line);
 });
 
-session_start();
+// Only start session if not already active (router.php may have started it)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Include files
 require __DIR__ . '/../config/db.php';
