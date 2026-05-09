@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 error_reporting(E_ALL);
 ini_set('display_errors', '0');          // Never leak HTML into responses
 ini_set('log_errors', '1');
@@ -85,7 +85,7 @@ if ($path === '/admin/create-newproduct') {
     }
     
     file_put_contents(__DIR__ . '/router.log', "  Create product route: serving create-newproduct.html\n", FILE_APPEND);
-    require __DIR__ . '/frontend/create-newproduct.html';
+    require __DIR__ . '/frontend/Admin/create-newproduct.html';
     exit;
 }
 
