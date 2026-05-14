@@ -53,6 +53,11 @@ if (session_status() === PHP_SESSION_NONE) {
 require __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../app/Http/Controllers/authController.php';
 require_once __DIR__ . '/../app/Http/Controllers/productController.php';
+require_once __DIR__ . '/../app/Http/Controllers/adminController.php';
+require_once __DIR__ . '/../app/Http/Controllers/inventoryController.php';
+require_once __DIR__ . '/../app/Http/Controllers/supplierController.php';
+require_once __DIR__ . '/../app/Http/Controllers/posController.php';
+
 
 // taskController might not exist yet, so safely include if available
 if (file_exists(__DIR__ . '/../app/Http/Controllers/taskController.php')) {
@@ -74,6 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Initialize controllers
 $authController = new AuthController($db);
 $productController = new ProductController($db);
+$posController = new POSController($db);
+$adminController = new AdminController($db);
+$inventoryController = new InventoryController($db);
+$supplierController = new SupplierController($db);
 $taskController = class_exists('TaskController') ? new TaskController($db) : null;
 
 // Route handling
@@ -138,15 +147,32 @@ switch ($action) {
         break;
   // ===== PRODUCT MANAGEMENT =====
     case 'product':
-  
+        $productId = $_GET['id'] ?? null;
         if ($method === 'GET') {
-            jsonResponse($productController->getAll());
+            if ($productId) {
+                jsonResponse($productController->getById($productId));
+            } else {
+                jsonResponse($productController->getAll());
+            }
         } elseif ($method === 'POST') {
             $user = $_SESSION['user'] ?? null;
             if (!$user || !in_array($user['role'], ['admin', 'seller'])) {
-                jsonResponse(['success' => false, 'message' => 'Forbidden: Admin/Seller only'], 403);
+                jsonResponse(['success' => false, 'message' => 'Forbidden: Admin access required'], 403);
             }
             jsonResponse($productController->create($payload));
+        } elseif ($method === 'PUT') {
+            $user = $_SESSION['user'] ?? null;
+            if (!$user || !in_array($user['role'], ['admin', 'seller'])) {
+                jsonResponse(['success' => false, 'message' => 'Forbidden: Admin access required'], 403);
+            }
+            $payload['id'] = $productId;
+            jsonResponse($productController->update($payload));
+        } elseif ($method === 'DELETE') {
+            $user = $_SESSION['user'] ?? null;
+            if (!$user || !in_array($user['role'], ['admin', 'seller'])) {
+                jsonResponse(['success' => false, 'message' => 'Forbidden: Admin access required'], 403);
+            }
+            jsonResponse($productController->delete(['id' => $productId]));
         } else {
             jsonResponse(['success'=>false,'message'=>'Method not allowed'], 405);
         }
@@ -154,6 +180,85 @@ switch ($action) {
     case 'update-stock':
         if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
         jsonResponse($productController->updateStock($payload));
+        break;
+
+    // ===== POS OPERATIONS =====
+    case 'get-cart':
+        jsonResponse($posController->getCart());
+        break;
+    
+    case 'add-to-cart':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($posController->addToCart($payload));
+        break;
+    
+    case 'update-cart-item':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($posController->updateCartItem($payload));
+        break;
+    
+    case 'remove-from-cart':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($posController->removeFromCart($payload));
+        break;
+    
+    case 'clear-cart':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($posController->clearCart());
+        break;
+    
+    case 'create-order':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($posController->createOrder($payload));
+        break;
+    
+    case 'get-orders':
+        jsonResponse($posController->getOrders());
+        break;
+    
+    case 'get-order':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($posController->getOrderById($payload));
+        break;
+    
+    case 'update-order-status':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($posController->updateOrderStatus($payload));
+        break;
+        
+    // ===== INVENTORY MANAGEMENT =====
+    case 'inventory':
+        jsonResponse($inventoryController->getInventory());
+        break;
+    
+    case 'stock-alerts':
+        jsonResponse($inventoryController->checkStockAlerts());
+        break;
+        
+    case 'stock-in':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($inventoryController->stockIn($payload));
+        break;
+        
+    case 'stock-out':
+        if ($method !== 'POST') jsonResponse(['success'=>false,'message'=>'Method not allowed'],405);
+        jsonResponse($inventoryController->stockOut($payload));
+        break;
+        
+    case 'stock-logs':
+        jsonResponse($inventoryController->getStockLogs($payload));
+        break;
+        
+    case 'suppliers':
+        jsonResponse($supplierController->getAll());
+        break;
+        
+    case 'dashboard-stats':
+        $user = $_SESSION['user'] ?? null;
+        if (!$user || !in_array($user['role'], ['admin', 'seller'])) {
+            jsonResponse(['success'=>false,'message'=>'Forbidden: Admin/Seller access required'],403);
+        }
+        jsonResponse($adminController->getDashboardStats());
         break;
         
     default:
@@ -163,7 +268,9 @@ switch ($action) {
             'available_actions'=>[
                 'register','login','logout','me',
                 'users','update-user-role',
-                'products','product','update-stock'
+                'products','product','update-stock',
+                'get-cart','add-to-cart','update-cart-item','remove-from-cart','clear-cart',
+                'create-order','get-orders','get-order','update-order-status'
             ]
         ], 400);
         break;

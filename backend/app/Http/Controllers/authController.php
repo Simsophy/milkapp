@@ -85,11 +85,11 @@ class AuthController {
         return ['success' => true, 'message' => 'Logged out successfully'];
     }
     
-    // Admin: Get all users
+    // Get all users (Admin/Seller only)
     public function getAllUsers() {
-        // Check if user is admin
+        // Check if user is admin or seller
         $user = $_SESSION['user'] ?? null;
-        if (!$user || ($user['role'] !== 'admin' && $user['role'] !== 'seller')) {
+        if (!$user || !in_array($user['role'], ['admin', 'seller'])) {
             return ['success' => false, 'message' => 'Unauthorized'];
         }
         
@@ -104,11 +104,11 @@ class AuthController {
         return ['success' => true, 'users' => $users];
     }
     
-    // Admin: Update user role
+    // Update user role (Admin/Seller only)
     public function updateUserRole($data) {
-        // Check if user is admin
+        // Check if user is admin or seller
         $user = $_SESSION['user'] ?? null;
-        if (!$user || ($user['role'] !== 'admin' && $user['role'] !== 'seller')) {
+        if (!$user || !in_array($user['role'], ['admin', 'seller'])) {
             return ['success' => false, 'message' => 'Unauthorized'];
         }
         

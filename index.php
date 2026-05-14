@@ -9,14 +9,14 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
     
     // Route based on user role
     if ($role === 'admin' || $role === 'seller') {
-        // Admin goes to dashboard.html
-        header('Location: frontend/dashboard.html');
+        // Admin/Seller goes to dashboard.html
+        header('Location: frontend/Admin/dashboard.html');
     } else {
-        // Regular user goes to index.html
-        header('Location: frontend/index.html');
+        // Regular user goes to user index.html
+        header('Location: frontend/User/index.html');
     }
 } else {
-    // Not authenticated, go to login
-    header('Location: frontend/login.html');
+    // Not authenticated - go to user home page (no login required for user role)
+    header('Location: frontend/User/index.html');
 }
 exit;

@@ -1,10 +1,10 @@
 const API_BASE = '/routes/api.php';
 function routeByRole(role) {
     // Map roles to their home pages
-    if (role === 'seller') {
+    if (role === 'seller' || role === 'admin') {
         return '/admin'; // Seller/admin goes to dashboard
     }
-    return '/user'; // Buyer/user goes to user dashboard
+    return '/'; // Buyer/user goes to main index (which serves user dashboard)
 }
 function routeAfterAuth(role) {
     return routeByRole(role);

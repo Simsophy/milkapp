@@ -35,6 +35,31 @@ function markAdminOnlyNav(role) {
 
 /*
 |--------------------------------------------------------------------------
+| ADMIN-ONLY ACCESS
+|--------------------------------------------------------------------------
+*/
+async function enforceAdminOnly() {
+
+    const user = await getCurrentUser();
+
+    if (!user) {
+        window.location.href = '/login';
+        return null;
+    }
+
+    // Only admin can access
+    if (user.role !== 'admin') {
+        window.location.href = '/index.html';
+        return null;
+    }
+
+    markAdminOnlyNav(user.role);
+
+    return user;
+}
+
+/*
+|--------------------------------------------------------------------------
 | ADMIN + SELLER ACCESS
 |--------------------------------------------------------------------------
 */
@@ -60,46 +85,46 @@ async function enforceAdminDashboard() {
 
 /*
 |--------------------------------------------------------------------------
-| CUSTOMER DASHBOARD
+| CUSTOMER DASHBOARD (User pages - NO login required)
 |--------------------------------------------------------------------------
 */
 async function enforceCustomerDashboard() {
 
     const user = await getCurrentUser();
 
-    if (!user) {
-        window.location.href = '/login';
-        return null;
-    }
-
-    // Admin & seller go to admin dashboard
-    if (user.role === 'admin' || user.role === 'seller') {
+    // If user is authenticated as admin/seller, redirect them to admin dashboard
+    if (user && (user.role === 'admin' || user.role === 'seller')) {
         window.location.href = '/admin';
         return null;
     }
 
-    markAdminOnlyNav(user.role);
+    // Mark admin nav items if user is authenticated
+    if (user) {
+        markAdminOnlyNav(user.role);
+    }
 
-    return user;
+    // Allow unauthenticated users to view customer pages
+    // Return user object if authenticated, or null if not (but don't redirect)
+    return user || null;
 }
 
 /*
 |--------------------------------------------------------------------------
-| GENERAL USER OR ADMIN
+| GENERAL USER OR ADMIN (User pages - NO login required)
 |--------------------------------------------------------------------------
 */
 async function enforceUserOrAdmin() {
 
     const user = await getCurrentUser();
 
-    if (!user) {
-        window.location.href = '/login';
-        return null;
+    // Mark admin nav items if user is authenticated
+    if (user) {
+        markAdminOnlyNav(user.role);
     }
 
-    markAdminOnlyNav(user.role);
-
-    return user;
+    // Allow both authenticated and unauthenticated users
+    // Return user object if authenticated, or null if not (but don't redirect)
+    return user || null;
 }
 
 /*

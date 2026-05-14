@@ -108,13 +108,13 @@
         }
 
         .badge-seller {
-            background: #eaf3eb;
-            color: #7a9e7e;
+            background: #fef3e2;
+            color: #c8832a;
         }
 
         .badge-admin {
-            background: #fbeae8;
-            color: #c0736a;
+            background: #fef3e2;
+            color: #c8832a;
         }
 
         .form-control,
@@ -283,14 +283,13 @@
 
                     <h2>Manage Products</h2>
 
-                    <button
+                    <a
+                        href="/admin/create-newproduct"
                         class="btn btn-primary"
-                        type="button"
-                        onclick="showModal('addProductModal')"
                         aria-label="Add Product"
                     >
                         + Add Product
-                    </button>
+                    </a>
 
                 </div>
 
@@ -681,6 +680,123 @@
     </div>
 </div>
 
+<!-- Edit Product Modal -->
+<div
+    class="modal fade"
+    id="editProductModal"
+    tabindex="-1"
+    aria-labelledby="editProductModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProductModalLabel">
+                    Edit Product
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+            </div>
+
+            <form id="editProductForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editProductId">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="editProductName">
+                            Product Name
+                        </label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="editProductName"
+                            placeholder="Enter product name"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="editProductCategory">
+                            Category
+                        </label>
+                        <select class="form-select" id="editProductCategory" required>
+                            <option value="">Select category</option>
+                            <option value="fresh">Fresh Milk</option>
+                            <option value="flavored">Flavored Milk</option>
+                            <option value="yogurt">Yogurt</option>
+                            <option value="cheese">Cheese</option>
+                            <option value="butter">Butter & Cream</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="editProductPrice">
+                            Price
+                        </label>
+                        <input
+                            type="number"
+                            class="form-control"
+                            id="editProductPrice"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="editProductStock">
+                            Stock Quantity
+                        </label>
+                        <input
+                            type="number"
+                            class="form-control"
+                            id="editProductStock"
+                            min="0"
+                            placeholder="0"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="editProductDescription">
+                            Description
+                        </label>
+                        <textarea
+                            class="form-control"
+                            id="editProductDescription"
+                            rows="3"
+                            placeholder="Product description (optional)"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="/assets/bootstrap.bundle.min.js"></script>
 <script src="/js/roleControl.js"></script>
 
@@ -897,12 +1013,20 @@
 
                         <td>
                             <button
+                                class="btn btn-sm btn-outline-primary"
+                                type="button"
+                                aria-label="Edit ${product.name}"
+                                onclick="editProduct(${product.id})"
+                            >
+                                ✏ Edit
+                            </button>
+                            <button
                                 class="btn btn-sm btn-outline-danger"
                                 type="button"
                                 aria-label="Delete ${product.name}"
                                 onclick="deleteProduct(${product.id})"
                             >
-                                Delete
+                                🗑 Delete
                             </button>
                         </td>
                     </tr>
@@ -1029,6 +1153,102 @@
             el.classList.remove('active');
         }, 4000);
     }
+
+    // Edit product
+    let currentEditProductId = null;
+
+    async function editProduct(productId) {
+        try {
+            const res = await fetch(
+                `${API_BASE}?action=product&id=${productId}`,
+                {
+                    credentials: 'include'
+                }
+            );
+
+            const data = await res.json();
+
+            if (!data.success) {
+                throw new Error(data.message);
+            }
+
+            const product = data.product || data.data;
+
+            if (!product) {
+                throw new Error('Product data not found');
+            }
+
+            // Populate form
+            currentEditProductId = product.id;
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductName').value = product.name || '';
+            document.getElementById('editProductCategory').value = product.category || '';
+            document.getElementById('editProductPrice').value = product.price || '';
+            document.getElementById('editProductStock').value = product.stock || '';
+            document.getElementById('editProductDescription').value = product.description || '';
+
+            // Show modal
+            const modal = new bootstrap.Modal(
+                document.getElementById('editProductModal')
+            );
+            modal.show();
+
+        } catch (err) {
+            showMessage('productsError', err.message);
+        }
+    }
+
+    // Handle edit product form submission
+    document.getElementById('editProductForm')
+        .addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            try {
+                const productId = document.getElementById('editProductId').value;
+
+                const res = await fetch(
+                    `${API_BASE}?action=product&id=${productId}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            name: document.getElementById('editProductName').value,
+                            description: document.getElementById('editProductDescription').value,
+                            category: document.getElementById('editProductCategory').value,
+                            price: parseFloat(document.getElementById('editProductPrice').value),
+                            stock: parseInt(document.getElementById('editProductStock').value)
+                        })
+                    }
+                );
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+
+                showMessage(
+                    'productsSuccess',
+                    'Product updated successfully!'
+                );
+
+                // Close modal
+                bootstrap.Modal.getInstance(
+                    document.getElementById('editProductModal')
+                ).hide();
+
+                loadProducts();
+
+            } catch (err) {
+                showMessage(
+                    'productsError',
+                    err.message
+                );
+            }
+        });
 
     // Initial load
     (async () => {

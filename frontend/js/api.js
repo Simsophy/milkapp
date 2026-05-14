@@ -20,6 +20,21 @@ export const register = (payload) => requestJson('register', 'POST', payload);
 export const logout = () => requestJson('logout');
 // PRODUCTS
 export const fetchProducts = () => requestJson('products');
+export const updateProduct = (id, payload) => requestJson(`product&id=${id}`, 'PUT', payload);
+export const deleteProduct = (id) => requestJson(`product&id=${id}`, 'DELETE');
+
+// INVENTORY
+export const getInventory = () => requestJson('inventory');
+export const checkStockAlerts = () => requestJson('stock-alerts');
+export const stockIn = (productId, quantity, supplierId, notes) => 
+    requestJson('stock-in', 'POST', { product_id: productId, quantity, supplier_id: supplierId, notes });
+export const stockOut = (productId, quantity, notes) => 
+    requestJson('stock-out', 'POST', { product_id: productId, quantity, notes });
+export const getStockLogs = () => requestJson('stock-logs');
+
+// SUPPLIERS
+export const getSuppliers = () => requestJson('suppliers');
+
 // PAYMENTS
 export const generatePaymentQR = (amount, description, orderId) => requestJson('generate-qr', 'POST', {
     amount,

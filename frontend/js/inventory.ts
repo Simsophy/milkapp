@@ -5,7 +5,8 @@ import {
     checkStockAlerts,
     stockIn,
     stockOut,
-    getSuppliers
+    getSuppliers,
+    getStockLogs
 } from './api.js';
 import { MilkProduct, StockAlert, Supplier } from './types.js';
 
@@ -37,7 +38,8 @@ class InventoryDashboard {
             await Promise.all([
                 this.loadInventory(),
                 this.loadAlerts(),
-                this.loadSuppliers()
+                this.loadSuppliers(),
+                this.loadStockLogs()
             ]);
             this.renderInventory();
             this.updateStats();
@@ -54,6 +56,16 @@ class InventoryDashboard {
             await logout();
             window.location.href = 'login.html';
         });
+
+        // Create Product
+        const createProductBtn = document.getElementById('createProductBtn') as HTMLButtonElement;
+        createProductBtn?.addEventListener('click', () => this.showCreateProductModal());
+
+        const closeCreateProductBtn = document.getElementById('closeCreateProductBtn') as HTMLButtonElement;
+        closeCreateProductBtn?.addEventListener('click', () => this.closeCreateProductModal());
+
+        const createProductForm = document.getElementById('createProductForm') as HTMLFormElement;
+        createProductForm?.addEventListener('submit', (e) => this.handleCreateProduct(e));
 
         // Stock In Modal
         const stockInBtn = document.getElementById('stockInBtn') as HTMLButtonElement;
@@ -74,6 +86,13 @@ class InventoryDashboard {
 
         const stockOutForm = document.getElementById('stockOutForm') as HTMLFormElement;
         stockOutForm?.addEventListener('submit', (e) => this.handleStockOut(e));
+
+        // Edit Product Modal
+        const closeEditProductBtn = document.getElementById('closeEditProductBtn') as HTMLButtonElement;
+        closeEditProductBtn?.addEventListener('click', () => this.closeEditProductModal());
+
+        const editProductForm = document.getElementById('editProductForm') as HTMLFormElement;
+        editProductForm?.addEventListener('submit', (e) => this.handleEditProduct(e));
 
         // Filters
         const searchInput = document.getElementById('searchInput') as HTMLInputElement;
@@ -189,10 +208,20 @@ class InventoryDashboard {
             .map(product => this.createProductRow(product))
             .join('');
 
-        // Add event listeners for edit buttons
-        this.filteredProducts.forEach(product => {
-            const editBtn = document.getElementById(`edit-${product.id}`);
-            editBtn?.addEventListener('click', () => this.handleEditProduct(product.id));
+        // Add event listeners for action buttons
+        const actionButtons = tbody.querySelectorAll('button[data-action]');
+        actionButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const action = btn.getAttribute('data-action');
+                const id = btn.getAttribute('data-id');
+                
+                if (action === 'edit' && id) {
+                    this.openEditProductModal(parseInt(id));
+                } else if (action === 'delete' && id) {
+                    this.deleteProduct(parseInt(id));
+                }
+            });
         });
     }
 
@@ -221,17 +250,171 @@ class InventoryDashboard {
                 <td class="stock-cell">${minLevel}</td>
                 <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
                 <td class="actions-cell">
-                    <button id="edit-${product.id}" class="btn-small btn-edit">Adjust</button>
+                    <button type="button" class="btn-small btn-edit" data-action="edit" data-id="${product.id}">✏ Edit</button>
+                    <button type="button" class="btn-small btn-edit" data-action="delete" data-id="${product.id}" style="background: #ef4444;">🗑 Delete</button>
                 </td>
             </tr>
         `;
     }
 
-    private handleEditProduct(productId: number): void {
+    private showCreateProductModal(): void {
+        const modal = document.getElementById('createProductModal');
+        modal?.classList.add('active');
+    }
+
+    private closeCreateProductModal(): void {
+        const modal = document.getElementById('createProductModal');
+        modal?.classList.remove('active');
+        const form = document.getElementById('createProductForm') as HTMLFormElement;
+        form?.reset();
+    }
+
+    private closeEditProductModal(): void {
+        const modal = document.getElementById('editProductModal');
+        modal?.classList.remove('active');
+        const form = document.getElementById('editProductForm') as HTMLFormElement;
+        form?.reset();
+    }
+
+    private openEditProductModal(productId: number): void {
         const product = this.products.find(p => p.id === productId);
-        if (product) {
-            console.log('[v0] Edit product:', product);
-            // Could open a modal for editing min stock level, etc.
+        if (!product) return;
+
+        const idInput = document.getElementById('editProductId') as HTMLInputElement;
+        const nameInput = document.getElementById('editProductName') as HTMLInputElement;
+        const categoryInput = document.getElementById('editProductCategory') as HTMLSelectElement;
+        const priceInput = document.getElementById('editProductPrice') as HTMLInputElement;
+        const stockInput = document.getElementById('editProductStock') as HTMLInputElement;
+        const descInput = document.getElementById('editProductDescription') as HTMLTextAreaElement;
+
+        idInput.value = String(product.id);
+        nameInput.value = product.name;
+        categoryInput.value = product.category || '';
+        priceInput.value = String(product.price || 0);
+        stockInput.value = String(product.stock || 0);
+        descInput.value = product.description || '';
+
+        const modal = document.getElementById('editProductModal');
+        modal?.classList.add('active');
+    }
+
+    private async handleCreateProduct(e: Event): Promise<void> {
+        e.preventDefault();
+
+        const nameInput = document.getElementById('newProductName') as HTMLInputElement;
+        const categoryInput = document.getElementById('newProductCategory') as HTMLSelectElement;
+        const priceInput = document.getElementById('newProductPrice') as HTMLInputElement;
+        const stockInput = document.getElementById('newProductStock') as HTMLInputElement;
+        const descInput = document.getElementById('newProductDescription') as HTMLTextAreaElement;
+
+        if (!nameInput.value || !categoryInput.value || !priceInput.value || stockInput.value === '') {
+            this.showAlert('Please fill in all required fields', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/routes/api.php?action=products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    name: nameInput.value,
+                    category: categoryInput.value,
+                    price: parseFloat(priceInput.value),
+                    stock: parseInt(stockInput.value),
+                    description: descInput.value
+                })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to create product');
+            }
+
+            this.showAlert('✓ Product created successfully!', 'success');
+            this.closeCreateProductModal();
+            await this.loadInventory();
+            this.renderInventory();
+            this.updateStats();
+
+        } catch (error) {
+            this.showAlert(`Failed to create product: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+        }
+    }
+
+    private async handleEditProduct(e: Event): Promise<void> {
+        e.preventDefault();
+
+        const idInput = document.getElementById('editProductId') as HTMLInputElement;
+        const nameInput = document.getElementById('editProductName') as HTMLInputElement;
+        const categoryInput = document.getElementById('editProductCategory') as HTMLSelectElement;
+        const priceInput = document.getElementById('editProductPrice') as HTMLInputElement;
+        const stockInput = document.getElementById('editProductStock') as HTMLInputElement;
+        const descInput = document.getElementById('editProductDescription') as HTMLTextAreaElement;
+
+        if (!nameInput.value || !categoryInput.value || !priceInput.value || stockInput.value === '') {
+            this.showAlert('Please fill in all required fields', 'error');
+            return;
+        }
+
+        const productId = parseInt(idInput.value);
+
+        try {
+            const response = await fetch(`/routes/api.php?action=product&id=${productId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    name: nameInput.value,
+                    category: categoryInput.value,
+                    price: parseFloat(priceInput.value),
+                    stock: parseInt(stockInput.value),
+                    description: descInput.value
+                })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to update product');
+            }
+
+            this.showAlert('✓ Product updated successfully!', 'success');
+            this.closeEditProductModal();
+            await this.loadInventory();
+            this.renderInventory();
+            this.updateStats();
+
+        } catch (error) {
+            this.showAlert(`Failed to update product: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+        }
+    }
+
+    private async deleteProduct(productId: number): Promise<void> {
+        if (!confirm('Are you sure you want to delete this product?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/routes/api.php?action=product&id=${productId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to delete product');
+            }
+
+            this.showAlert('✓ Product deleted successfully!', 'success');
+            await this.loadInventory();
+            this.renderInventory();
+            this.updateStats();
+
+        } catch (error) {
+            this.showAlert(`Failed to delete product: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
         }
     }
 
@@ -384,6 +567,38 @@ class InventoryDashboard {
             console.error('[v0] Stock Out Error:', error);
             this.showAlert('Failed to remove stock', 'error');
         }
+    }
+
+    private async loadStockLogs(): Promise<void> {
+        try {
+            const response = await getStockLogs();
+            if (response.success) {
+                this.renderStockLogs(response.data);
+            }
+        } catch (error) {
+            console.error('[v0] Load Stock Logs Error:', error);
+        }
+    }
+
+    private renderStockLogs(logs: any[]): void {
+        const tbody = document.getElementById('stockLogTable');
+        if (!tbody) return;
+
+        if (!logs || logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;">No logs available</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = logs.map(log => `
+            <tr>
+                <td>${new Date(log.created_at).toLocaleString()}</td>
+                <td>${log.product_name}</td>
+                <td><span class="status-badge ${log.type === 'IN' ? 'status-available' : 'status-critical'}">${log.type}</span></td>
+                <td>${log.quantity}</td>
+                <td>${log.reference_type || '-'}</td>
+                <td>${log.notes || '-'}</td>
+            </tr>
+        `).join('');
     }
 
     private updateStats(): void {

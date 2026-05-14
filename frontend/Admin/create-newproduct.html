@@ -244,12 +244,14 @@
     display: block;
   }
 
-  .alert.success {
-    background: var(--sage-bg);
-    color: var(--sage);
-    border: 1.5px solid var(--sage);
-  }
-
+ .alert.success {
+  background: var(--sage-bg);
+  color: var(--sage);
+  border: 1.5px solid var(--sage);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 1.2rem;
+}
   .alert.error {
     background: var(--rose-bg);
     color: var(--rose);
@@ -331,7 +333,7 @@
   <div class="nav-links">
     <a href="/admin">📊 Dashboard</a>
     <a href="/admin/inventory">📦 Inventory</a>
-    <a href="/admin/logout" class="nav-logout">⏻ Logout</a>
+    <a href="/routes/api.php?action=logout" class="nav-logout">⏻ Logout</a>
   </div>
 </nav>
 
@@ -343,7 +345,7 @@
 
   <div id="alertBox" class="alert"></div>
 
-  <form id="productForm">
+ <form id="productForm" method="POST" action="javascript:void(0);">
     <!-- Product Name -->
     <div class="form-group">
       <label for="productName">Product Name *</label>
@@ -440,97 +442,211 @@
 </div>
 
 <script src="/js/roleControl.js"></script>
-<script>
-  // Ensure only admin/seller can access
-  document.addEventListener('DOMContentLoaded', async function() {
-    if (typeof enforceAdminOnly === 'function') {
-      const user = await enforceAdminOnly();
-      if (!user) return;
-    }
-    initForm();
-  });
 
-  function showAlert(message, type = 'info') {
-    const alertBox = document.getElementById('alertBox');
-    const icons = {
-      success: '✓',
-      error: '✕',
-      info: 'ℹ'
-    };
-    
-    alertBox.className = `alert show ${type}`;
-    alertBox.innerHTML = `<span class="alert-icon">${icons[type]}</span>${message}`;
-    
-    if (type === 'success') {
-      setTimeout(() => {
-        window.location.href = '/admin/inventory?add=1';
-      }, 1500);
+<script>
+let formInitialized = false;
+
+// Setup page
+async function setupPage() {
+  console.log('[CreateProduct] setupPage() called');
+
+  try {
+    // Optional admin auth check
+    if (typeof enforceAdminDashboard === 'function') {
+      const user = await enforceAdminDashboard();
+
+      console.log('[CreateProduct] Auth result:', user);
+
+      if (!user) {
+        console.log('[CreateProduct] Unauthorized');
+        return;
+      }
     }
+
+    initForm();
+
+  } catch (error) {
+    console.error('[CreateProduct] Setup error:', error);
+  }
+}
+
+// Initialize form
+function initForm() {
+  if (formInitialized) {
+    console.log('[CreateProduct] Form already initialized');
+    return;
   }
 
-  function initForm() {
-    const form = document.getElementById('productForm');
-    form.addEventListener('submit', async (e) => {
+  console.log('[CreateProduct] initForm() called');
+
+  const form = document.getElementById('productForm');
+  const submitBtn = document.querySelector('.btn-submit');
+
+  if (!form) {
+    console.error('[CreateProduct] Form not found');
+    return;
+  }
+
+  // Handle form submission
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('[New Product] Form submit event triggered');
+    await submitForm();
+  });
+
+  // Also handle button click as fallback
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async function (e) {
       e.preventDefault();
+      console.log('[New Product] Submit button clicked');
       await submitForm();
     });
   }
 
-  async function submitForm() {
-    const submitBtn = document.querySelector('.btn-submit');
-    const form = document.getElementById('productForm');
-    
-    try {
-      // Validate form
-      if (!form.checkValidity()) {
-        showAlert('Please fill in all required fields', 'error');
-        return;
-      }
+  formInitialized = true;
+  console.log('[CreateProduct] Form initialized successfully');
+}
 
-      // Get form data
-      const formData = {
-        name: document.getElementById('productName').value.trim(),
-        price: parseFloat(document.getElementById('price').value),
-        stock: parseInt(document.getElementById('stock').value),
-        category: document.getElementById('category').value,
-        description: document.getElementById('description').value.trim(),
-        image_url: document.getElementById('imageUrl').value.trim()
-      };
+// Show alert
+function showAlert(message, type = 'info') {
+  const alertBox = document.getElementById('alertBox');
 
-      console.log('[New Product] Submitting:', formData);
+  const icons = {
+    success: '✓',
+    error: '✕',
+    info: 'ℹ'
+  };
 
-      // Show loading state
-      submitBtn.classList.add('loading');
-      submitBtn.disabled = true;
+  alertBox.className = `alert show ${type}`;
 
-      // Send to API
-      const response = await fetch('/routes/api.php?action=products', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+  alertBox.innerHTML = `
+    <span class="alert-icon">${icons[type]}</span>
+    ${message}
+  `;
 
-      const result = await response.json();
-      console.log('[New Product] Response:', result);
+  // Auto hide
+  setTimeout(() => {
+    alertBox.classList.remove('show');
+  }, 4000);
+}
 
-      submitBtn.classList.remove('loading');
-      submitBtn.disabled = false;
+// Submit form
+async function submitForm() {
+  console.log('[New Product] submitForm() called');
 
-      if (result.success) {
-        showAlert('✓ Product created successfully! Redirecting...', 'success');
-        form.reset();
-      } else {
-        const message = result.message || 'Failed to create product';
-        showAlert(message, 'error');
-      }
-    } catch (error) {
-      console.error('[New Product] Error:', error);
-      showAlert('Network error. Please try again.', 'error');
-      submitBtn.classList.remove('loading');
-      submitBtn.disabled = false;
-    }
+  const form = document.getElementById('productForm');
+  const submitBtn = document.querySelector('.btn-submit');
+
+  if (!form || !submitBtn) {
+    console.error('[New Product] Missing form elements');
+    showAlert('Form error: Missing form elements', 'error');
+    return;
   }
+
+  // Prevent double submit
+  if (submitBtn.disabled) {
+    console.log('[New Product] Already submitting, ignoring duplicate click');
+    return;
+  }
+
+  // Check form validity
+  console.log('[New Product] Checking form validity...');
+  
+  const isValid = form.checkValidity();
+  console.log('[New Product] Form checkValidity result:', isValid);
+
+  if (!isValid) {
+    console.log('[New Product] Form validation failed - invalid fields detected');
+    
+    // Debug which fields are invalid
+    const fields = form.querySelectorAll('input, select, textarea');
+    fields.forEach(field => {
+      const valid = field.checkValidity();
+      if (!valid) {
+        console.warn(`[Validation Error] Field "${field.id}" is invalid:`, field.validationMessage);
+        field.style.borderColor = 'var(--rose)';
+      } else {
+        field.style.borderColor = '';
+      }
+    });
+
+    showAlert('❌ Please fill in all required fields correctly', 'error');
+    return;
+  }
+
+  console.log('[New Product] Form validation passed - all fields valid');
+
+  // Collect form data
+  const formData = {
+    name: document.getElementById('productName').value.trim(),
+    price: parseFloat(document.getElementById('price').value),
+    stock: parseInt(document.getElementById('stock').value),
+    category: document.getElementById('category').value,
+    description: document.getElementById('description').value.trim(),
+    image_url: document.getElementById('imageUrl').value.trim()
+  };
+
+  console.log('[New Product] Collected form data:', formData);
+
+  try {
+    // Set loading state
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '⏳ Creating Product...';
+
+    console.log('[New Product] Sending POST request to API...');
+
+    // Send to API
+    const response = await fetch('/routes/api.php?action=products', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+
+    console.log('[New Product] API Response status:', response.status);
+    
+    const result = await response.json();
+    console.log('[New Product] API Response:', result);
+
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
+
+    if (result.success) {
+      const product = result.data || formData;
+      console.log('[New Product] ✓ Product created successfully:', product);
+      showAlert(`✓ Product "${product.name}" created successfully! Redirecting...`, 'success');
+      
+      setTimeout(() => {
+        window.location.href = '/admin/inventory.html';
+      }, 2000);
+      
+      form.reset();
+    } else {
+      const errorMsg = result.message || 'Failed to create product';
+      console.error('[New Product] ✕ API error:', errorMsg);
+      showAlert(`✕ ${errorMsg}`, 'error');
+    }
+    
+  } catch (error) {
+    console.error('[New Product] Exception during submission:', error);
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+    showAlert(`⚠ Network error: ${error.message}`, 'error');
+  }
+}
+
+// Start app
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('[CreateProduct] DOM Loaded');
+
+  setupPage();
+});
 </script>
 
 </body>

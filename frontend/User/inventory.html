@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Milk App – Inventory</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<style>
+/* 🔥 YOUR ORIGINAL STYLE (UNCHANGED) */
+
+:root {
+  --cream: #fdf6ec;
+  --ivory: #fff9f2;
+  --milk-white: #ffffff;
+  --warm-brown: #5c3d2e;
+  --caramel: #c8832a;
+  --caramel-light: #f0c27f;
+  --caramel-bg: #fef3e2;
+  --sage: #7a9e7e;
+  --sage-bg: #eaf3eb;
+  --rose: #c0736a;
+  --rose-bg: #fbeae8;
+  --sky: #6a8fc0;
+  --sky-bg: #e8eef8;
+  --text-dark: #2b1d0e;
+  --text-mid: #6b4c38;
+  --text-light: #a68970;
+  --border: #e8d5c0;
+  --nav-h: 70px;
+  --radius: 12px;
+  --shadow: 0 4px 20px rgba(92, 61, 46, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background-color: var(--cream);
+  background-image: radial-gradient(var(--border) 0.5px, transparent 0.5px);
+  background-size: 24px 24px; /* Subtle grid pattern */
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+/* --- NAVIGATION --- */
+.topnav {
+  height: var(--nav-h);
+  background: rgba(255, 255, 255, 0.8);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-decoration: none;
+  color: var(--warm-brown);
+  letter-spacing: -0.5px;
+}
+
+.brand em {
+  color: var(--caramel);
+  font-style: normal;
+}
+.inventory-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:20px;
+}
+
+.inv-card{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  transition:0.3s;
+}
+
+.inv-card:hover{
+  transform:translateY(-5px);
+}
+
+.inv-img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+}
+
+.inv-body{
+  padding:15px;
+}
+
+.inv-title{
+  font-weight:800;
+  color:var(--warm-brown);
+  margin-bottom:5px;
+}
+
+.inv-meta{
+  font-size:0.85rem;
+  color:var(--text-light);
+  margin-bottom:10px;
+}
+
+.inv-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:0.9rem;
+  margin-top:6px;
+}
+
+.badge{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:0.75rem;
+  background:var(--caramel-bg);
+  color:var(--caramel);
+  font-weight:700;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-mid);
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.nav-links a:hover {
+  background: var(--caramel-bg);
+  color: var(--caramel);
+}
+
+.nav-links a.active {
+  background: var(--warm-brown);
+  color: white;
+}
+
+.nav-new {
+  background: var(--caramel);
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(200, 131, 42, 0.3);
+}
+
+/* --- PAGE LAYOUT --- */
+.page {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--warm-brown);
+  margin-bottom: 4px;
+}
+
+.page-sub {
+  color: var(--text-light);
+  margin-bottom: 30px;
+}
+
+/* --- TABLE CARD --- */
+.table-card {
+  background: var(--milk-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+thead {
+  background: var(--ivory);
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  padding: 18px 24px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-light);
+  font-weight: 700;
+}
+
+td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--cream);
+  font-size: 0.95rem;
+  color: var(--text-mid);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover {
+  background-color: var(--ivory);
+}
+
+/* --- DATA STYLING --- */
+td b {
+  color: var(--warm-brown);
+  font-weight: 700;
+}
+
+/* Category Badge Styling */
+td:nth-child(5) {
+  text-transform: capitalize;
+}
+
+/* Price Column */
+td:nth-child(6), td:nth-child(7), td:nth-child(8) {
+  font-family: 'Courier New', monospace; /* Monospaced numbers look "pro" */
+  font-weight: 500;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .nav-links a:not(.nav-new) { display: none; }
+  .table-card { overflow-x: auto; }
+}
+
+/* (ALL YOUR CSS STAYS SAME — NOT MODIFIED) */
+
+</style>
+</head>
+
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <a class="brand" href="/admin">Milk <em>App</em></a>
+
+  <div class="nav-links">
+    <a href="/admin">📊 Dashboard</a>
+    <a href="/admin/inventory" class="active">📦 Inventory</a>
+    <a href="/user" class="nav-new">＋ New Order</a>
+    <a href="/admin/delivery">🚚 Delivery</a>
+
+    <div class="nav-divider"></div>
+
+    <a href="/login" class="nav-logout">⏻ Logout</a>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+
+<h1 class="page-title">Inventory</h1>
+<p class="page-sub">Manage your milk product stock levels.</p>
+
+<!-- TABLE -->
+<div class="table-card">
+
+<table>
+
+<thead>
+<tr>
+  <th>ID</th>
+  <th>User</th>
+  <th>Phone</th>
+  <th>Product</th>
+  <th>Category</th>
+  <th>Price</th>
+  <th>Discount</th>
+  <th>Tax</th>
+  <th>Total</th>
+</tr>
+</thead>
+
+<tbody id="invBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+let products = [];
+
+async function loadInventory() {
+  try {
+    const res = await fetch('/routes/api.php?action=products');
+    const result = await res.json();
+
+    if (result.success) {
+      products = result.data;
+      renderTable();
+    } else {
+      console.error('Failed to load products');
+    }
+
+  } catch (err) {
+    console.error('Error loading inventory:', err);
+  }
+}
+
+function renderTable() {
+
+  const tbody = document.getElementById("invBody");
+
+  tbody.innerHTML = products.map(p => {
+
+    const discount = p.price * 0.10;
+    const tax = p.price * 0.10;
+    const total = p.price + discount + tax;
+
+    return `
+      <tr>
+        <td>${p.id}</td>
+        <td>${p.user_name || '-'}</td>
+        <td>${p.phone || '-'}</td>
+        <td>${p.name}</td>
+        <td>${p.category}</td>
+        <td>$${Number(p.price).toFixed(2)}</td>
+        <td>$${discount.toFixed(2)}</td>
+        <td>$${tax.toFixed(2)}</td>
+        <td><b>$${total.toFixed(2)}</b></td>
+      </tr>
+    `;
+
+  }).join('');
+}
+
+loadInventory();
+
+/* ADD SAMPLE DATA */
+products = [
+  {
+    id:1,
+    user_name:"Sophy",
+    phone:"012345678",
+    name:"Fresh Milk",
+    cat:"fresh",
+    price:2.5
+  },
+  {
+    id:2,
+    user_name:"Dara",
+    phone:"098765432",
+    name:"Chocolate Milk",
+    cat:"flavored",
+    price:3.2
+  }
+];
+
+/* INIT */
+renderTable();
+
+</script>
+
+</body>
+</html>

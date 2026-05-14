@@ -9,6 +9,7 @@ session_start();
 
 // Router for PHP built-in server
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$path = strtolower($path); // Convert to lowercase for case-insensitive routing
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 file_put_contents(__DIR__ . '/router.log', date('c') . " - Request: $method $path (user: " . ($_SESSION['user']['username'] ?? 'none') . ")\n", FILE_APPEND);
@@ -59,104 +60,89 @@ if (is_file($frontendFile)) {
     exit;
 }
 
+// Authentication variables
+$isAuthenticated = isset($_SESSION['user']);
+$userRole = $_SESSION['user']['role'] ?? 'guest';
+
+// Helper function to check admin access
+$isAdmin = $isAuthenticated && in_array($userRole, ['admin', 'seller']);
+
 // 3. Route handling for SPA routes
-$isAuthenticated = isset($_SESSION['user']) && !empty($_SESSION['user']);
-$userRole = $_SESSION['user']['role'] ?? null;
 
-// Check for admin manage page
-if ($path === '/admin/manage') {
-    // Both roles can access when authenticated
-    if (!$isAuthenticated) {
-        require __DIR__ . '/frontend/login.html';
-        exit;
+// Login page - Redirect to dashboard if already logged in
+if ($path === '/login' || $path === '/login.html') {
+    if ($isAuthenticated) {
+        if ($isAdmin) { header('Location: /admin'); exit; }
+        else { header('Location: /'); exit; }
     }
-    
-    file_put_contents(__DIR__ . '/router.log', "  Admin manage route: serving admin-manage.html\n", FILE_APPEND);
-    require __DIR__ . '/frontend/admin-manage.html';
+    require __DIR__ . '/frontend/login.html';
     exit;
 }
 
-// Check for create new product page
-if ($path === '/admin/create-newproduct') {
-    // Both roles can access when authenticated
-    if (!$isAuthenticated) {
-        require __DIR__ . '/frontend/login.html';
-        exit;
+// Check for admin dashboard
+if ($path === '/admin/dashboard' || $path === '/admin') {
+    if (!$isAdmin) { 
+        header('Location: /login'); 
+        exit; 
     }
-    
-    file_put_contents(__DIR__ . '/router.log', "  Create product route: serving create-newproduct.html\n", FILE_APPEND);
-    require __DIR__ . '/frontend/Admin/create-newproduct.html';
+    require __DIR__ . '/frontend/Admin/dashboard.html';
     exit;
 }
 
-// Check for user routes (for buyers)
-if ($path === '/user' || strpos($path, '/user') === 0) {
-    if (!$isAuthenticated) {
-        require __DIR__ . '/frontend/login.html';
-        exit;
-    }
-    
-    // Serve user-specific pages
-    if ($path === '/user' || $path === '/user/') {
-        file_put_contents(__DIR__ . '/router.log', "  User route: serving User/index.html\n", FILE_APPEND);
-        require __DIR__ . '/frontend/User/index.html';
-        exit;
-    }
-    if ($path === '/user/delivery') {
-        file_put_contents(__DIR__ . '/router.log', "  User route: serving User/delivery.html\n", FILE_APPEND);
-        require __DIR__ . '/frontend/User/delivery.html';
-        exit;
-    }
-    if ($path === '/user/pos') {
-        file_put_contents(__DIR__ . '/router.log', "  User route: serving User/pos.html\n", FILE_APPEND);
-        require __DIR__ . '/frontend/User/pos.html';
-        exit;
-    }
-    
-    // Default user page
-    file_put_contents(__DIR__ . '/router.log', "  User route: fallback to User/index.html\n", FILE_APPEND);
+// Check for user dashboard
+if ($path === '/user' || $path === '/index.html') {
     require __DIR__ . '/frontend/User/index.html';
     exit;
 }
 
-// Check for admin/seller protected routes - both roles can access
-if (in_array($path, ['/admin', '/dashboard', '/inventory', '/pos', '/delivery', '/admin/create-newproduct']) || 
-    strpos($path, '/admin') === 0 ||
-    strpos($path, '/dashboard') === 0 ||
-    strpos($path, '/inventory') === 0 ||
-    strpos($path, '/pos') === 0 ||
-    strpos($path, '/delivery') === 0) {
-    
-    // If not authenticated, redirect to login
-    if (!$isAuthenticated) {
-        require __DIR__ . '/frontend/login.html';
+// Check for admin manage product
+if ($path === '/admin/manage-product') {
+    if (!$isAdmin) { header('Location: /login'); exit; }
+    require __DIR__ . '/frontend/Admin/manage-product.html';
+    exit;
+}
+
+// Check for admin inventory
+if ($path === '/admin/inventory') {
+    if (!$isAdmin) { header('Location: /login'); exit; }
+    require __DIR__ . '/frontend/Admin/inventory-dashboard.html';
+    exit;
+}
+
+// Check for admin delivery
+if ($path === '/admin/delivery') {
+    if (!$isAdmin) { header('Location: /login'); exit; }
+    require __DIR__ . '/frontend/Admin/delivery-management.html';
+    exit;
+}
+
+// Check for other admin/seller protected routes
+if (strpos($path, '/admin/') === 0) {
+    if (!$isAdmin) {
+        header('Location: /login');
         exit;
     }
-    
-    // Both roles can access admin routes when authenticated
-    file_put_contents(__DIR__ . '/router.log', "  Protected route: serving dashboard.html (role: $userRole)\n", FILE_APPEND);
+    // Default to dashboard for general /admin/ routes if not handled above
     require __DIR__ . '/frontend/Admin/dashboard.html';
     exit;
 }
 
 // 4. All other routes -> serve login page (SPA entry point) or root
 if ($path === '/' || $path === '') {
-    // For root, route based on role
+    // For root, route based on authentication and role
     if ($isAuthenticated) {
         // If admin/seller, serve dashboard.html
-        if ($userRole === 'seller') {
-            file_put_contents(__DIR__ . '/router.log', "  Root path: seller role, serving dashboard.html\n", FILE_APPEND);
+        if ($isAdmin) {
             require __DIR__ . '/frontend/Admin/dashboard.html';
             exit;
         } else {
-            // Regular user, serve index.html
-            file_put_contents(__DIR__ . '/router.log', "  Root path: user role, serving index.html\n", FILE_APPEND);
-            require __DIR__ . '/frontend/index.html';
+            // Authenticated regular user, serve user index
+            require __DIR__ . '/frontend/User/index.html';
             exit;
         }
     } else {
-        file_put_contents(__DIR__ . '/router.log', "  Root path: not authenticated, serving login.html\n", FILE_APPEND);
-        require __DIR__ . '/frontend/login.html';
+        // Not authenticated - show user home page (index.html)
+        require __DIR__ . '/frontend/User/index.html';
         exit;
     }
 }

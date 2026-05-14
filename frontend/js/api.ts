@@ -56,6 +56,16 @@ export const logout = () =>
 export const fetchProducts = () =>
     requestJson<ProductApiResponse>('products');
 
+export const createProduct = (productData: {
+    name: string;
+    price: number;
+    stock: number;
+    category: string;
+    description?: string;
+    image_url?: string;
+}) =>
+    requestJson<ProductApiResponse>('products', 'POST', productData);
+
 // PAYMENTS
 export const generatePaymentQR = (amount: number, description?: string, orderId?: string) =>
     requestJson<QRGenerateResponse>('generate-qr', 'POST', {

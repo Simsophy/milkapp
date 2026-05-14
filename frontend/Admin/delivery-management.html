@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Management - Milk App Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #5c3d2e;
+            --accent: #c8832a;
+            --accent-light: #fef3e2;
+            --bg: #fdf6ec;
+            --white: #ffffff;
+            --text-main: #2b1d0e;
+            --text-muted: #8d7a6a;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --border: #e8d5c0;
+            --shadow: 0 10px 30px rgba(92, 61, 46, 0.08);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            height: 72px;
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            border-bottom: 1.5px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(92, 61, 46, 0.04);
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+
+        .brand span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .btn-nav {
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .btn-nav:hover {
+            color: var(--primary);
+            background: var(--accent-light);
+        }
+
+        .btn-nav.active {
+            color: var(--white);
+            background: var(--accent);
+            box-shadow: 0 4px 12px rgba(200, 131, 42, 0.3);
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1.5px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 40px rgba(92, 61, 46, 0.12);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* TABLE */
+        .table-section {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1.5px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1.5px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background: var(--accent-light);
+            border-bottom: 1.5px solid var(--border);
+        }
+
+        th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--accent-light);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .order-id {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .status-shipped {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+
+        .status-delivered {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--white);
+            box-shadow: 0 4px 12px rgba(200, 131, 42, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #b8722a;
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text-main);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(92, 61, 46, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 400px;
+            animation: slideInUp 0.3s ease;
+            z-index: 3000;
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--error); }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(92, 61, 46, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem;
+            border-bottom: 1.5px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-select {
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: var(--white);
+            color: var(--text-main);
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(200, 131, 42, 0.1);
+        }
+
+        .modal-footer {
+            padding: 2rem;
+            border-top: 1.5px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="brand">Milk<span>App</span></a>
+        <div class="nav-links">
+            <a href="/admin/dashboard" class="btn-nav">Dashboard</a>
+            <a href="/admin/manage-product" class="btn-nav">Products</a>
+            <a href="/admin/inventory" class="btn-nav">Inventory</a>
+            <a href="/admin/delivery" class="btn-nav active">Delivery</a>
+            <button class="btn-nav" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h1 class="page-title">Delivery Management</h1>
+            <button class="btn btn-primary" onclick="refreshDeliveries()">🔄 Refresh</button>
+        </div>
+
+        <!-- STATS CARDS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Pending Delivery</div>
+                <div class="stat-value" id="pendingCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Shipped</div>
+                <div class="stat-value" id="shippedCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Delivered</div>
+                <div class="stat-value" id="deliveredCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-value" id="totalCount">0</div>
+            </div>
+        </div>
+
+        <!-- DELIVERY TABLE -->
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-title">📦 Deliveries</div>
+            </div>
+            <div class="table-wrapper">
+                <table id="deliveryTable">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer ID</th>
+                            <th>Order Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deliveryBody">
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <div class="empty-state-icon">📦</div>
+                                <p>No deliveries available</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPDATE STATUS MODAL -->
+    <div class="modal" id="statusModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Update Delivery Status</h2>
+                <button class="modal-close" onclick="closeStatusModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">New Status</label>
+                    <select class="form-select" id="statusSelect" title="Select delivery status">
+                        <option value="">Select status...</option>
+                        <option value="pending">Pending</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeStatusModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveStatus()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast" style="display: none;"></div>
+
+    <script>
+        const API_BASE = '/routes/api.php';
+        let allOrders = [];
+        let currentOrderId = null;
+
+        async function requestJson(action, method = 'GET', body = undefined) {
+            try {
+                const response = await fetch(`${API_BASE}?action=${action}`, {
+                    method,
+                    credentials: 'include',
+                    headers: method === 'POST' 
+                        ? { 'Content-Type': 'application/json' }
+                        : undefined,
+                    body: body !== undefined ? JSON.stringify(body) : undefined
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Request failed: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error(`API Error (${action}):`, error);
+                throw error;
+            }
+        }
+
+        async function loadDeliveries() {
+            try {
+                const result = await requestJson('get-orders');
+                if (result.success) {
+                    allOrders = result.data || [];
+                    renderTable();
+                    updateStats();
+                } else {
+                    showToast(result.message || 'Failed to load deliveries', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading deliveries:', error);
+                showToast('Failed to load deliveries', 'error');
+            }
+        }
+
+        function updateStats() {
+            const pending = allOrders.filter(o => o.delivery_status === 'pending' || !o.delivery_status).length;
+            const shipped = allOrders.filter(o => o.delivery_status === 'shipped').length;
+            const delivered = allOrders.filter(o => o.delivery_status === 'delivered').length;
+
+            document.getElementById('pendingCount').textContent = pending.toString();
+            document.getElementById('shippedCount').textContent = shipped.toString();
+            document.getElementById('deliveredCount').textContent = delivered.toString();
+            document.getElementById('totalCount').textContent = allOrders.length.toString();
+        }
+
+        function getStatusBadge(status) {
+            const statusMap = {
+                'pending': 'status-pending',
+                'shipped': 'status-shipped',
+                'delivered': 'status-delivered',
+                'cancelled': 'status-cancelled'
+            };
+            const cssClass = statusMap[status] || 'status-pending';
+            const displayText = status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Pending';
+            return `<span class="status-badge ${cssClass}">${displayText}</span>`;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('deliveryBody');
+
+            if (allOrders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">📦</div>
+                            <p>No deliveries available</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = allOrders.map(order => `
+                <tr>
+                    <td class="order-id">#${order.id}</td>
+                    <td>Customer #${order.user_id}</td>
+                    <td>${formatDate(order.created_at)}</td>
+                    <td>$${parseFloat(order.total).toFixed(2)}</td>
+                    <td>${getStatusBadge(order.delivery_status || 'pending')}</td>
+                    <td>
+                        <button class="btn btn-small btn-primary" onclick="openStatusModal(${order.id}, '${order.delivery_status || 'pending'}')">Update</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openStatusModal(orderId, currentStatus) {
+            currentOrderId = orderId;
+            document.getElementById('statusSelect').value = currentStatus;
+            document.getElementById('statusModal').classList.add('active');
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').classList.remove('active');
+            currentOrderId = null;
+        }
+
+        async function saveStatus() {
+            const status = document.getElementById('statusSelect').value;
+            if (!status || !currentOrderId) {
+                showToast('Please select a status', 'error');
+                return;
+            }
+
+            try {
+                const result = await requestJson('update-order-status', 'POST', {
+                    order_id: currentOrderId,
+                    status: status
+                });
+
+                if (result.success) {
+                    showToast('Delivery status updated', 'success');
+                    await loadDeliveries();
+                    closeStatusModal();
+                } else {
+                    showToast(result.message || 'Failed to update status', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showToast('Failed to update status', 'error');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'flex';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function refreshDeliveries() {
+            showToast('Refreshing deliveries...', 'info');
+            loadDeliveries();
+        }
+
+        async function handleLogout() {
+            try {
+                await requestJson('logout', 'POST', {});
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDeliveries();
+        });
+
+        // Close modal on outside click
+        document.getElementById('statusModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeStatusModal();
+            }
+        });
+    </script>
+</body>
+</html>

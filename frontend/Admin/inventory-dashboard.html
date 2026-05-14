@@ -4,713 +4,232 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Dashboard - Milk App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #5c3d2e;
-            --accent: #c8832a;
-            --accent-light: #fef3e2;
-            --bg: #fdf6ec;
-            --white: #ffffff;
-            --text-main: #2b1d0e;
-            --text-muted: #8d7a6a;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --border: #e8d5c0;
-            --shadow: 0 10px 30px rgba(92, 61, 46, 0.08);
-            --radius: 18px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text-main);
-            line-height: 1.6;
-        }
-
-        /* NAVBAR */
-        .navbar {
-            height: 72px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            border-bottom: 1.5px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .brand {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: -0.5px;
-        }
-
-        .brand span {
-            color: var(--accent);
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .btn-nav {
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: 0.3s;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 4px 12px rgba(200, 131, 42, 0.3);
-        }
-
-        .btn-primary:hover {
-            background: #b8722a;
-            transform: translateY(-2px);
-        }
-
-        /* MAIN CONTENT */
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            gap: 1rem;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-accent {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-accent:hover {
-            background: #b8722a;
-        }
-
-        .btn-secondary {
-            background: var(--border);
-            color: var(--text-main);
-        }
-
-        .btn-secondary:hover {
-            background: #ddc4b0;
-        }
-
-        /* ALERTS SECTION */
-        .alerts-section {
-            margin-bottom: 2rem;
-        }
-
-        .alerts-header {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .alerts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .alert-card {
-            background: var(--white);
-            border-left: 4px solid var(--warning);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-        }
-
-        .alert-card.critical {
-            border-left-color: var(--error);
-        }
-
-        .alert-card.safe {
-            border-left-color: var(--success);
-            display: none;
-        }
-
-        .alert-title {
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--text-main);
-            margin-bottom: 0.5rem;
-        }
-
-        .alert-content {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-        }
-
-        .alert-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .alert-progress {
-            height: 100%;
-            background: var(--warning);
-            transition: width 0.3s;
-        }
-
-        .alert-card.critical .alert-progress {
-            background: var(--error);
-        }
-
-        /* INVENTORY TABLE */
-        .inventory-section {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 2rem;
-            box-shadow: var(--shadow);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .filter-controls {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .search-input,
-        .filter-select {
-            padding: 10px 12px;
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            font-size: 0.9rem;
-            transition: 0.3s;
-        }
-
-        .search-input:focus,
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(200, 131, 42, 0.1);
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: var(--accent-light);
-        }
-
-        th {
-            padding: 12px 1rem;
-            text-align: left;
-            font-weight: 700;
-            color: var(--primary);
-            border-bottom: 2px solid var(--border);
-        }
-
-        td {
-            padding: 12px 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        tr:hover {
-            background: rgba(200, 131, 42, 0.03);
-        }
-
-        .product-cell {
-            font-weight: 600;
-        }
-
-        .stock-cell {
-            text-align: center;
-            font-weight: 700;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .status-available {
-            background: rgba(34, 197, 94, 0.1);
-            color: var(--success);
-        }
-
-        .status-low {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-        }
-
-        .status-critical {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--error);
-        }
-
-        .price-cell {
-            color: var(--accent);
-            font-weight: 700;
-        }
-
-        .actions-cell {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .btn-small {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-            white-space: nowrap;
-        }
-
-        .btn-edit {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #b8722a;
-        }
-
-        .btn-stock-in {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-stock-in:hover {
-            background: #16a34a;
-        }
-
-        /* MODAL */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: var(--radius);
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .form-input {
-            padding: 10px 12px;
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            font-size: 0.95rem;
-            transition: 0.3s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(200, 131, 42, 0.1);
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .btn-modal {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-modal-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-modal-primary:hover {
-            background: #b8722a;
-        }
-
-        .btn-modal-secondary {
-            background: var(--border);
-            color: var(--text-main);
-        }
-
-        .btn-modal-secondary:hover {
-            background: #ddc4b0;
-        }
-
-        /* STATS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-
-        .stat-label {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-
-        .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--error);
-            border: 1px solid var(--error);
-        }
-
-        .alert-warning {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-            border: 1px solid var(--warning);
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header-actions {
-                width: 100%;
-            }
-
-            .filter-controls {
-                flex-direction: column;
-            }
-
-            .search-input,
-            .filter-select {
-                width: 100%;
-            }
-
-            .table-wrapper {
-                font-size: 0.85rem;
-            }
-
-            th, td {
-                padding: 8px 0.5rem;
-            }
-
-            .btn-small {
-                padding: 4px 8px;
-                font-size: 0.75rem;
-            }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
-        }
-
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
+            --primary: #4361ee;
+            --success: #4cc9f0;
+            --warning: #ffb703;
+            --danger: #e63946;
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; }
+        .sidebar { width: 260px; height: 100vh; background: #212529; color: white; padding: 20px; position: fixed; }
+        .sidebar h2 { font-size: 1.5rem; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .nav-links { list-style: none; padding: 0; }
+        .nav-links li { margin-bottom: 10px; }
+        .nav-links a { color: #adb5bd; text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-radius: 8px; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { background: var(--primary); color: white; }
+
+        .main-content { margin-left: 260px; flex: 1; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .card h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #f0f2f5; color: #6c757d; }
+        td { padding: 15px 12px; border-bottom: 1px solid #f0f2f5; }
+
+        .type-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 700; }
+        .type-IN { background: #d4edda; color: #155724; }
+        .type-OUT { background: #f8d7da; color: #721c24; }
+
+        .btn { padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="brand">Milk<span>App</span></div>
-        <div class="nav-links">
-            <a href="index.html" class="btn-nav">Dashboard</a>
-            <a href="pos.html" class="btn-nav">POS System</a>
-            <button id="logoutBtn" class="btn-nav btn-primary">Logout</button>
-        </div>
-    </nav>
+    <div class="sidebar">
+        <h2><i class="fas fa-glass-milk"></i> MilkApp</h2>
+        <ul class="nav-links">
+            <li><a href="/admin/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="/admin/manage-product"><i class="fas fa-box"></i> Manage Products</a></li>
+            <li><a href="/admin/inventory" class="active"><i class="fas fa-warehouse"></i> Inventory</a></li>
+            <li><a href="/admin/delivery"><i class="fas fa-truck"></i> Deliveries</a></li>
+        </ul>
+    </div>
 
-    <!-- Main Content -->
-    <div class="container">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 class="page-title">Inventory Dashboard</h1>
-            <div class="header-actions">
-                <button id="stockInBtn" class="btn btn-accent">Stock In</button>
-                <button id="stockOutBtn" class="btn btn-secondary">Stock Out</button>
-            </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>Inventory Dashboard</h1>
+            <button class="btn btn-primary" onclick="showAdjustModal()">
+                <i class="fas fa-plus-minus"></i> Adjust Stock
+            </button>
         </div>
 
-        <!-- Alerts -->
-        <div id="alertContainer"></div>
-
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Products</div>
-                <div class="stat-value" id="totalProducts">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Low Stock Items</div>
-                <div class="stat-value" id="lowStockCount">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Stock Value</div>
-                <div class="stat-value" id="totalValue">$0</div>
-            </div>
+        <div class="card">
+            <h2>Current Stock Status</h2>
+            <table id="stockTable">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Current Stock</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="stockBody">
+                    <tr><td colspan="5" style="text-align:center">Loading stock...</td></tr>
+                </tbody>
+            </table>
         </div>
 
-        <!-- Stock Alerts -->
-        <div class="alerts-section">
-            <div class="alerts-header">Stock Alerts</div>
-            <div id="alertsContainer" class="alerts-grid">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📦</div>
-                    <p>All items are in stock</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Inventory Table -->
-        <div class="inventory-section">
-            <div class="section-header">
-                <h2 class="section-title">Current Inventory</h2>
-                <div class="filter-controls">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        class="search-input" 
-                        placeholder="Search products..."
-                    >
-                    <select id="categoryFilter" class="filter-select">
-                        <option value="">All Categories</option>
-                        <option value="Fresh">Fresh</option>
-                        <option value="Almond">Almond</option>
-                        <option value="Oat">Oat</option>
-                    </select>
-                    <select id="stockFilter" class="filter-select">
-                        <option value="">All Stock Levels</option>
-                        <option value="critical">Critical (0 items)</option>
-                        <option value="low">Low Stock</option>
-                        <option value="available">Available</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Current Stock</th>
-                            <th>Min Level</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventoryTable">
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 2rem;">Loading inventory...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="card">
+            <h2>Stock Movement History</h2>
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Product</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <tr><td colspan="5" style="text-align:center">Loading history...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Stock In Modal -->
-    <div id="stockInModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">Add Stock (Stock IN)</div>
-            <form id="stockInForm">
-                <div class="form-group">
-                    <label class="form-label">Product</label>
-                    <select id="productSelect" class="form-input" required>
-                        <option value="">Select a product...</option>
+    <!-- Stock Adjustment Modal -->
+    <div id="adjustModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:15px; width:400px;">
+            <h2 id="modalTitle">Adjust Stock</h2>
+            <form id="adjustForm">
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:600;">Product</label>
+                    <select id="adjProduct" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;" required></select>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:600;">Action Type</label>
+                    <select id="adjType" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                        <option value="IN">Stock IN (+)</option>
+                        <option value="OUT">Stock OUT (-)</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Quantity</label>
-                    <input type="number" id="quantityInput" class="form-input" min="1" required>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:600;">Quantity</label>
+                    <input type="number" id="adjQty" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;" min="1" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Supplier (Optional)</label>
-                    <select id="supplierSelect" class="form-input">
-                        <option value="">Select supplier...</option>
-                    </select>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:600;">Notes</label>
+                    <textarea id="adjNotes" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;" rows="2" placeholder="e.g., Supplier delivery, Damaged goods"></textarea>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Notes (Optional)</label>
-                    <textarea id="notesInput" class="form-input" rows="3" placeholder="Add any notes..."></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn-modal btn-modal-primary">Add Stock</button>
-                    <button type="button" id="closeStockInBtn" class="btn-modal btn-modal-secondary">Cancel</button>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="btn btn-primary" style="flex:1">Save Change</button>
+                    <button type="button" class="btn" style="background:#6c757d; color:white; flex:1" onclick="closeAdjustModal()">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Stock Out Modal -->
-    <div id="stockOutModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">Remove Stock (Stock OUT)</div>
-            <form id="stockOutForm">
-                <div class="form-group">
-                    <label class="form-label">Product</label>
-                    <select id="productSelectOut" class="form-input" required>
-                        <option value="">Select a product...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Quantity</label>
-                    <input type="number" id="quantityInputOut" class="form-input" min="1" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Reason (Optional)</label>
-                    <textarea id="reasonInputOut" class="form-input" rows="3" placeholder="Why is stock being removed?"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn-modal btn-modal-primary">Remove Stock</button>
-                    <button type="button" id="closeStockOutBtn" class="btn-modal btn-modal-secondary">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <script>
+        let allProducts = [];
 
-    <script type="module" src="/js/inventory.ts"></script>
+        async function loadInventory() {
+            try {
+                // Load current stock
+                const stockRes = await fetch('/routes/api.php?action=inventory');
+                const stockData = await stockRes.json();
+                if (stockData.success) {
+                    allProducts = stockData.data;
+                    renderStock(allProducts);
+                    populateProductDropdown(allProducts);
+                }
+
+                // Load history (logs)
+                const historyRes = await fetch('/routes/api.php?action=stock-logs');
+                const historyData = await historyRes.json();
+                if (historyData.success) {
+                    renderHistory(historyData.data);
+                }
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+            }
+        }
+
+        function populateProductDropdown(products) {
+            const select = document.getElementById('adjProduct');
+            select.innerHTML = products.map(p => `<option value="${p.id}">${p.name} (Current: ${p.stock})</option>`).join('');
+        }
+
+        function showAdjustModal() {
+            document.getElementById('adjustModal').style.display = 'flex';
+        }
+
+        function closeAdjustModal() {
+            document.getElementById('adjustModal').style.display = 'none';
+        }
+
+        document.getElementById('adjustForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const productId = document.getElementById('adjProduct').value;
+            const type = document.getElementById('adjType').value;
+            const qty = document.getElementById('adjQty').value;
+            const notes = document.getElementById('adjNotes').value;
+
+            const action = type === 'IN' ? 'stock-in' : 'stock-out';
+
+            try {
+                const response = await fetch(`/routes/api.php?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: qty,
+                        notes: notes
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    closeAdjustModal();
+                    loadInventory();
+                    alert('Stock adjusted successfully!');
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error adjusting stock:', error);
+            }
+        };
+
+        function renderStock(products) {
+            const body = document.getElementById('stockBody');
+            body.innerHTML = products.map(p => `
+                <tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.category}</td>
+                    <td>$${parseFloat(p.price).toFixed(2)}</td>
+                    <td>${p.stock}</td>
+                    <td>
+                        <span style="color: ${p.stock < 10 ? 'red' : 'green'}; font-weight: bold;">
+                            ${p.stock < 10 ? 'Low Stock' : 'In Stock'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderHistory(logs) {
+            const body = document.getElementById('historyBody');
+            body.innerHTML = logs.map(l => `
+                <tr>
+                    <td>${new Date(l.created_at).toLocaleString()}</td>
+                    <td>${l.product_name}</td>
+                    <td><span class="type-badge type-${l.type}">${l.type}</span></td>
+                    <td>${l.quantity}</td>
+                    <td>${l.notes || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        window.onload = loadInventory;
+    </script>
 </body>
 </html>
